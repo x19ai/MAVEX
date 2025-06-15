@@ -1,5 +1,6 @@
 import Link from "next/link"
 import React from "react"
+import { APP_NAME } from "@/lib/config"
 
 export function Header() {
   return (
@@ -7,7 +8,7 @@ export function Header() {
       <div className="h-app-header top-app-header bg-background pointer-events-none absolute left-0 z-50 mx-auto w-full to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] lg:hidden"></div>
       <div className="bg-background relative mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:bg-transparent lg:px-8">
         <Link href="/" className="text-xl font-medium tracking-tight">
-          Zola
+          {APP_NAME}
         </Link>
       </div>
     </header>
