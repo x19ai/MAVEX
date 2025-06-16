@@ -95,29 +95,11 @@ export default function LoginPage() {
       const publicKey = resp.publicKey.toString()
       console.log('Public key:', publicKey)
 
-      // Create a message to sign
-      const message = `localhost:3000 wants you to sign in with your Solana account:
-
-Sign this message to authenticate with your Phantom wallet.
-
-This request will not trigger a blockchain transaction or cost any gas fees.
-
-Nonce: ${Date.now()}
-
-Timestamp: ${new Date().toISOString()}`
-
-      const encodedMessage = new TextEncoder().encode(message)
-
-      // Request signature from Phantom
-      console.log('Requesting signature...')
-      const { signature } = await provider.signMessage(encodedMessage, "utf8")
-      console.log('Got signature')
-
       // Sign in with Supabase using the signature
       console.log('Signing in with Supabase...')
       const { data, error } = await supabase.auth.signInWithWeb3({
         chain: 'solana',
-        statement: `I accept the Terms of Service at ${window.location.origin}/terms`,
+        statement: `Authenticate your Phantom wallet with MAVEX. This won't trigger a blockchain transaction.`,
         wallet: window.phantom?.solana || window.solana?.phantom as any // Type assertion needed due to interface mismatch
       })
 
