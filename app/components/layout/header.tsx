@@ -15,6 +15,8 @@ import { Info } from "@phosphor-icons/react"
 import Link from "next/link"
 import { DialogPublish } from "./dialog-publish"
 import { HeaderSidebarTrigger } from "./header-sidebar-trigger"
+import { HeaderTwitterButton } from "./header-twitter-button"
+import { ContractAddress } from "./contract-address"
 
 export type AgentHeader = Pick<
   Agent,
@@ -47,6 +49,10 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
           <div />
           {!isLoggedIn ? (
             <div className="pointer-events-auto flex flex-1 items-center justify-end gap-4">
+              <div className="flex items-center gap-2">
+                <ContractAddress />
+                <HeaderTwitterButton />
+              </div>
               <AppInfoTrigger
                 trigger={
                   <Button
@@ -71,6 +77,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               {currentAgent && <DialogPublish />}
               <ButtonNewChat />
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
+              <HeaderTwitterButton />
               <UserMenu />
             </div>
           )}

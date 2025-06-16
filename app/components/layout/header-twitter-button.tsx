@@ -1,0 +1,28 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+
+export function HeaderTwitterButton() {
+  const handleTwitterClick = () => {
+    window.open("https://twitter.com/M4V3X", "_blank")
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="bg-background hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
+      onClick={handleTwitterClick}
+      aria-label="Follow us on X"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="size-4"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    </Button>
+  )
+} 
