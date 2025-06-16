@@ -21,8 +21,6 @@ import { SettingsTrigger } from "./settings/settings-trigger"
 export function UserMenu() {
   const { user } = useUser()
 
-  if (!user) return null
-
   return (
     // fix shadcn/ui / radix bug when dialog into dropdown menu
     <DropdownMenu modal={false}>
@@ -30,8 +28,14 @@ export function UserMenu() {
         <TooltipTrigger asChild>
           <DropdownMenuTrigger>
             <Avatar className="bg-background hover:bg-muted">
-              <AvatarImage src={user?.profile_image ?? undefined} />
-              <AvatarFallback>{user?.display_name?.charAt(0)}</AvatarFallback>
+              {user ? (
+                <>
+                  <AvatarImage src={user?.profile_image ?? undefined} />
+                  <AvatarFallback>{user?.display_name?.charAt(0)}</AvatarFallback>
+                </>
+              ) : (
+                <AvatarFallback>?</AvatarFallback>
+              )}
             </Avatar>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -43,16 +47,20 @@ export function UserMenu() {
         forceMount
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <DropdownMenuItem className="flex flex-col items-start gap-0 no-underline hover:bg-transparent focus:bg-transparent">
-          <span>{user?.display_name}</span>
-          <span className="text-muted-foreground max-w-full truncate">
-            {user?.email}
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <SettingsTrigger />
-        <FeedbackTrigger />
+        {user && (
+          <>
+            <DropdownMenuItem className="flex flex-col items-start gap-0 no-underline hover:bg-transparent focus:bg-transparent">
+              <span>{user?.display_name}</span>
+              <span className="text-muted-foreground max-w-full truncate">
+                {user?.email}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <AppInfoTrigger />
+        <FeedbackTrigger />
+        <SettingsTrigger asMenuItem={true} />
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -15,7 +15,9 @@ export function ModelPreferences() {
 
   const handleModelSelection = async (value: string) => {
     setSelectedModelId(value)
-    await updateUser({ preferred_model: value })
+    if (user) {
+      await updateUser({ preferred_model: value })
+    }
   }
 
   return (
@@ -27,6 +29,7 @@ export function ModelPreferences() {
             selectedModelId={effectiveModelId}
             setSelectedModelId={handleModelSelection}
             className="w-full"
+            isUserAuthenticated={!!user}
           />
         </div>
         <p className="text-muted-foreground mt-2 text-xs">

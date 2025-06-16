@@ -15,7 +15,14 @@ export function SystemPromptSection() {
   const effectivePrompt = prompt ?? user?.system_prompt ?? ""
 
   const savePrompt = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      toast({
+        title: "Please sign in",
+        description: "You need to sign in to save your system prompt.",
+        status: "info",
+      })
+      return
+    }
 
     setIsLoading(true)
     try {

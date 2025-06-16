@@ -24,12 +24,7 @@ import { Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useChatHandlers } from "./use-chat-handlers"
 import { useChatUtils } from "./use-chat-utils"
 import { useFileUpload } from "./use-file-upload"
-import { TwitterButton } from "./twitter-button"
-
-const FeedbackWidget = dynamic(
-  () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
-  { ssr: false }
-)
+import { FeedbackWidget } from "./feedback-widget"
 
 const DialogAuth = dynamic(
   () => import("./dialog-auth").then((mod) => mod.DialogAuth),
@@ -501,7 +496,6 @@ export function Chat() {
       </motion.div>
 
       <div className="fixed right-1 bottom-1 z-50 flex gap-2">
-        <TwitterButton />
         <FeedbackWidget authUserId={user?.id} />
       </div>
     </div>

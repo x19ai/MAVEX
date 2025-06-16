@@ -17,6 +17,7 @@ import { DialogPublish } from "./dialog-publish"
 import { HeaderSidebarTrigger } from "./header-sidebar-trigger"
 import { HeaderTwitterButton } from "./header-twitter-button"
 import { ContractAddress } from "./contract-address"
+import { SettingsTrigger } from "./settings/settings-trigger"
 
 export type AgentHeader = Pick<
   Agent,
@@ -53,6 +54,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
                 <ContractAddress />
                 <HeaderTwitterButton />
               </div>
+              <SettingsTrigger />
               <AppInfoTrigger
                 trigger={
                   <Button
@@ -78,6 +80,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               <ButtonNewChat />
               {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
               <HeaderTwitterButton />
+              <SettingsTrigger />
               <UserMenu />
             </div>
           )}

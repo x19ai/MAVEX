@@ -14,16 +14,31 @@ import { User } from "@phosphor-icons/react"
 import type React from "react"
 import { useState } from "react"
 import { SettingsContent } from "./settings-content"
+import { Button } from "@/components/ui/button"
 
-export function SettingsTrigger() {
+type SettingsTriggerProps = {
+  asMenuItem?: boolean
+}
+
+export function SettingsTrigger({ asMenuItem = false }: SettingsTriggerProps) {
   const [open, setOpen] = useState(false)
   const isMobile = useBreakpoint(768)
 
-  const trigger = (
+  const trigger = asMenuItem ? (
     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
       <User className="size-4" />
       <span>Settings</span>
     </DropdownMenuItem>
+  ) : (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Settings"
+      className="bg-background hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
+      onClick={() => setOpen(true)}
+    >
+      <User className="size-4" />
+    </Button>
   )
 
   if (isMobile) {

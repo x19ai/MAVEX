@@ -7,8 +7,6 @@ import { User } from "@phosphor-icons/react"
 export function UserProfile() {
   const { user } = useUser()
 
-  if (!user) return null
-
   return (
     <div>
       <h3 className="mb-3 text-sm font-medium">Profile</h3>
@@ -24,8 +22,8 @@ export function UserProfile() {
           )}
         </div>
         <div>
-          <h4 className="text-sm font-medium">{user?.display_name}</h4>
-          <p className="text-muted-foreground text-sm">{user?.email}</p>
+          <h4 className="text-sm font-medium">{user?.display_name || "Guest User"}</h4>
+          <p className="text-muted-foreground text-sm">{user?.email || "Not signed in"}</p>
         </div>
       </div>
     </div>
