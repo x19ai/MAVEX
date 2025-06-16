@@ -80,65 +80,12 @@ export function ModelSelector({
     }
   )
 
-  const renderModelItem = (model: ModelConfig) => {
-    const isLocked = !model.accessible
-    const provider = PROVIDERS.find((provider) => provider.id === model.icon)
-
-    return (
-      <div
-        key={model.id}
-        className={cn(
-          "flex w-full items-center justify-between px-3 py-2",
-          selectedModelId === model.id && "bg-accent"
-        )}
-        onClick={() => {
-          if (isLocked) {
-            setSelectedProModel(model.id)
-            setIsProDialogOpen(true)
-            return
-          }
-
-          setSelectedModelId(model.id)
-          if (isMobile) {
-            setIsDrawerOpen(false)
-          } else {
-            setIsDropdownOpen(false)
-          }
-        }}
-      >
-        <div className="flex items-center gap-3">
-          {provider?.icon && <provider.icon className="size-5" />}
-          <div className="flex flex-col gap-0">
-            <span className="text-sm">{model.name}</span>
-          </div>
-        </div>
-        {isLocked && (
-          <div className="border-input bg-accent text-muted-foreground flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
-            <StarIcon className="size-2" />
-            <span>Locked</span>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Get the hovered model data
-  const hoveredModelData = models.find((model) => model.id === hoveredModel)
-
-  const filteredModels = models
-    .filter((model) => !isModelHidden(model.id))
-    .filter((model) =>
-      model.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      const aIsFree = FREE_MODELS_IDS.includes(a.id)
-      const bIsFree = FREE_MODELS_IDS.includes(b.id)
-      return aIsFree === bIsFree ? 0 : aIsFree ? -1 : 1
-    })
-
-  if (isLoadingModels) {
-    return null
-  }
+  const filteredModels = models.filter((model) => {
+    const matchesSearch = model.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+    return !isModelHidden(model.id) && matchesSearch
+  })
 
   const trigger = (
     <Button
@@ -158,37 +105,6 @@ export function ModelSelector({
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     setSearchQuery(e.target.value)
-  }
-
-  // If user is not authenticated, show the auth popover
-  if (!isUserAuthenticated) {
-    return (
-      <Popover>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                size="sm"
-                variant="secondary"
-                className={cn(
-                  "border-border dark:bg-secondary text-accent-foreground h-9 w-auto border bg-transparent",
-                  className
-                )}
-                type="button"
-              >
-                {currentProvider?.icon && (
-                  <currentProvider.icon className="size-5" />
-                )}
-                {currentModel?.name}
-                <CaretDownIcon className="size-4" />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent>Select a model</TooltipContent>
-        </Tooltip>
-        <PopoverContentAuth />
-      </Popover>
-    )
   }
 
   if (isMobile) {
@@ -218,7 +134,7 @@ export function ModelSelector({
                 />
               </div>
             </div>
-            <div className="flex h-full flex-col space-y-0 overflow-y-auto px-4 pb-6">
+            <div className="flex h-full flex-col space-y-0 overflow-y-auto px-1 pt-0 pb-0">
               {isLoadingModels ? (
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                   <p className="text-muted-foreground mb-2 text-sm">
@@ -226,20 +142,57 @@ export function ModelSelector({
                   </p>
                 </div>
               ) : filteredModels.length > 0 ? (
-                filteredModels.map((model) => renderModelItem(model))
+                filteredModels.map((model) => {
+                  const isLocked = !model.accessible
+                  const provider = PROVIDERS.find(
+                    (provider) => provider.id === model.icon
+                  )
+
+                  return (
+                    <DropdownMenuItem
+                      key={model.id}
+                      className={cn(
+                        "flex w-full items-center justify-between px-3 py-2",
+                        selectedModelId === model.id && "bg-accent"
+                      )}
+                      onSelect={() => {
+                        if (isLocked) {
+                          setSelectedProModel(model.id)
+                          setIsProDialogOpen(true)
+                          return
+                        }
+
+                        setSelectedModelId(model.id)
+                        setIsDropdownOpen(false)
+                      }}
+                      onFocus={() => {
+                        if (isDropdownOpen) {
+                          setHoveredModel(model.id)
+                        }
+                      }}
+                      onMouseEnter={() => {
+                        if (isDropdownOpen) {
+                          setHoveredModel(model.id)
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        {provider?.icon && (
+                          <provider.icon className="size-5" />
+                        )}
+                        <span>{model.name}</span>
+                      </div>
+                      {isLocked && (
+                        <StarIcon className="text-muted-foreground size-4" />
+                      )}
+                    </DropdownMenuItem>
+                  )
+                })
               ) : (
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                   <p className="text-muted-foreground mb-2 text-sm">
-                    No results found.
+                    No models found
                   </p>
-                  <a
-                    href="https://github.com/ibelick/zola/issues/new?title=Model%20Request%3A%20"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground text-sm underline"
-                  >
-                    Request a new model
-                  </a>
                 </div>
               )}
             </div>
@@ -337,43 +290,26 @@ export function ModelSelector({
                         }
                       }}
                     >
-                      <div className="flex items-center gap-3">
-                        {provider?.icon && <provider.icon className="size-5" />}
-                        <div className="flex flex-col gap-0">
-                          <span className="text-sm">{model.name}</span>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        {provider?.icon && (
+                          <provider.icon className="size-5" />
+                        )}
+                        <span>{model.name}</span>
                       </div>
                       {isLocked && (
-                        <div className="border-input bg-accent text-muted-foreground flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
-                          <span>Locked</span>
-                        </div>
+                        <StarIcon className="text-muted-foreground size-4" />
                       )}
                     </DropdownMenuItem>
                   )
                 })
               ) : (
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-                  <p className="text-muted-foreground mb-1 text-sm">
-                    No results found.
+                  <p className="text-muted-foreground mb-2 text-sm">
+                    No models found
                   </p>
-                  <a
-                    href="https://github.com/ibelick/zola/issues/new?title=Model%20Request%3A%20"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground text-sm underline"
-                  >
-                    Request a new model
-                  </a>
                 </div>
               )}
             </div>
-
-            {/* Submenu positioned absolutely */}
-            {hoveredModelData && (
-              <div className="absolute top-0 left-[calc(100%+8px)]">
-                <SubMenu hoveredModelData={hoveredModelData} />
-              </div>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </Tooltip>

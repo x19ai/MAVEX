@@ -48,42 +48,43 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             </div>
           </div>
           <div />
-          {!isLoggedIn ? (
-            <div className="pointer-events-auto flex flex-1 items-center justify-end gap-4">
-              <div className="flex items-center gap-2">
-                <ContractAddress />
-                <HeaderTwitterButton />
-              </div>
-              <SettingsTrigger />
-              <AppInfoTrigger
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="bg-background hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
-                    aria-label={`About ${APP_NAME}`}
-                  >
-                    <Info className="size-4" />
-                  </Button>
-                }
-              />
-              <Link
-                href="/auth"
-                className="font-base text-muted-foreground hover:text-foreground text-base transition-colors"
-              >
-                Login
-              </Link>
-            </div>
-          ) : (
-            <div className="pointer-events-auto flex flex-1 items-center justify-end gap-2">
-              {currentAgent && <DialogPublish />}
-              <ButtonNewChat />
-              {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
+          <div className="pointer-events-auto flex flex-1 items-center justify-end gap-4">
+            <div className="flex items-center gap-2">
+              <ContractAddress />
               <HeaderTwitterButton />
-              <SettingsTrigger />
-              <UserMenu />
             </div>
-          )}
+            {!isLoggedIn ? (
+              <>
+                <SettingsTrigger />
+                <AppInfoTrigger
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="bg-background hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
+                      aria-label={`About ${APP_NAME}`}
+                    >
+                      <Info className="size-4" />
+                    </Button>
+                  }
+                />
+                <Link
+                  href="/auth"
+                  className="font-base text-muted-foreground hover:text-foreground text-base transition-colors"
+                >
+                  Login
+                </Link>
+              </>
+            ) : (
+              <>
+                {currentAgent && <DialogPublish />}
+                <ButtonNewChat />
+                {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
+                <SettingsTrigger />
+                <UserMenu />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

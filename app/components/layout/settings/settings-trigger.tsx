@@ -11,6 +11,7 @@ import {
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { User } from "@phosphor-icons/react"
+import { GearSix } from "@phosphor-icons/react"
 import type React from "react"
 import { useState } from "react"
 import { SettingsContent } from "./settings-content"
@@ -26,7 +27,7 @@ export function SettingsTrigger({ asMenuItem = false }: SettingsTriggerProps) {
 
   const trigger = asMenuItem ? (
     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-      <User className="size-4" />
+      <GearSix className="size-4" />
       <span>Settings</span>
     </DropdownMenuItem>
   ) : (
@@ -37,7 +38,7 @@ export function SettingsTrigger({ asMenuItem = false }: SettingsTriggerProps) {
       className="bg-background hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
       onClick={() => setOpen(true)}
     >
-      <User className="size-4" />
+      <GearSix className="size-4" />
     </Button>
   )
 
