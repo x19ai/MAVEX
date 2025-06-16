@@ -51,3 +51,13 @@ export const getSiteName = (url: string) => {
     return url
   }
 }
+
+export const getUTMSource = () => {
+  if (typeof window === "undefined") return null
+  const u = new URL(window.location.href)
+  if (!u.searchParams.has("utm_source")) {
+    u.searchParams.set("utm_source", "mavex.chat")
+    window.history.replaceState(null, "", u.toString())
+  }
+  return u.searchParams.get("utm_source")
+}

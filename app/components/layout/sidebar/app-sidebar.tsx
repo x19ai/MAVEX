@@ -13,11 +13,12 @@ import {
 import { useChats } from "@/lib/chat-store/chats/provider"
 import {
   ChatTeardropText,
-  GithubLogo,
   MagnifyingGlass,
   NotePencilIcon,
   X,
 } from "@phosphor-icons/react"
+import Image from "next/image"
+import PumpFunLogo from "@/public/pumpfun.png"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
@@ -115,20 +116,20 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="mb-2 p-3">
         <a
-          href="https://github.com/ibelick/zola"
+          href="https://pump.fun/coin/"
           className="hover:bg-muted flex items-center gap-2 rounded-md p-2"
           target="_blank"
           aria-label="Star the repo on GitHub"
         >
           <div className="rounded-full border p-1">
-            <GithubLogo className="size-4" />
+            <Image src={PumpFunLogo} alt="PumpFun" width={16} height={16} />
           </div>
           <div className="flex flex-col">
             <div className="text-sidebar-foreground text-sm font-medium">
-              {APP_NAME} is open source
+              {APP_NAME} is on Pumpfun
             </div>
             <div className="text-sidebar-foreground/70 text-xs">
-              Star the repo on GitHub!
+              Hold tokens for exclusive rewards!
             </div>
           </div>
         </a>

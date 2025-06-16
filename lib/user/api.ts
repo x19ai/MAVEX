@@ -18,7 +18,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     // return fake user profile for no supabase
     return {
       id: "guest",
-      email: "guest@zola.chat",
+      email: "guest@mavex.chat",
       display_name: "Guest",
       profile_image: "",
       anonymous: true,
@@ -39,7 +39,8 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 
   return {
     ...userProfileData,
-    profile_image: user.user_metadata?.avatar_url ?? "",
-    display_name: user.user_metadata?.name ?? "",
+    profile_image: userProfileData?.profile_image ?? "",
+    display_name: userProfileData?.display_name ?? "",
+    wallet_address: userProfileData?.wallet_address ?? "",
   } as UserProfile
 }

@@ -34,3 +34,9 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 }
 
 export const isDev = process.env.NODE_ENV === "development"
+
+export function formatWalletAddress(address: string): string {
+  if (!address) return "";
+  if (address.length <= 8) return address;
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}

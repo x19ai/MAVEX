@@ -120,8 +120,6 @@ export const MESSAGE_MAX_LENGTH = 10000
 
 export const CURATED_AGENTS_SLUGS = [
   "github/ibelick/prompt-kit",
-  "github/ibelick/zola",
+  "mavex/helper",
   "github/shadcn/ui",
-  "tweet-vibe-checker",
-  "blog-draft",
 ]

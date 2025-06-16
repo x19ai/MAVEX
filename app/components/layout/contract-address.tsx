@@ -8,7 +8,7 @@ import { useState } from "react"
 export function ContractAddress() {
   const [copied, setCopied] = useState(false)
   const contractAddress = "CA"
-  const displayAddress = `${contractAddress.slice(0, 5)}..`
+  const displayAddress = `${contractAddress.slice(0, 3)}..`
 
   const handleCopy = async () => {
     try {

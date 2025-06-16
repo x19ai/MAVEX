@@ -1,8 +1,11 @@
+version: '3.8'
+
 services:
-  zola:
+  mavex:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: mavex-app
     ports:
       - "3000:3000"
     environment:

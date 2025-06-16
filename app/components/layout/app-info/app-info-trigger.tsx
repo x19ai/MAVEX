@@ -22,6 +22,7 @@ import { APP_NAME } from "@/lib/config"
 import { Info } from "@phosphor-icons/react"
 import Image from "next/image"
 import { AppInfoContent } from "./app-info-content"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 type AppInfoTriggerProps = {
   trigger?: React.ReactNode
@@ -50,7 +51,9 @@ export function AppInfoTrigger({ trigger }: AppInfoTriggerProps) {
               height={128}
               className="h-32 w-full object-cover"
             />
-            <DrawerTitle className="hidden">{APP_NAME}</DrawerTitle>
+            <VisuallyHidden>
+              <DrawerTitle>{APP_NAME}</DrawerTitle>
+            </VisuallyHidden>
             <DrawerDescription className="hidden">
               Your minimalist AI chat companion
             </DrawerDescription>
@@ -75,7 +78,9 @@ export function AppInfoTrigger({ trigger }: AppInfoTriggerProps) {
             height={128}
             className="h-32 w-full object-cover"
           />
-          <DialogTitle className="hidden">{APP_NAME}</DialogTitle>
+          <VisuallyHidden>
+            <DialogTitle>{APP_NAME}</DialogTitle>
+          </VisuallyHidden>
           <DialogDescription className="hidden">
             Your minimalist AI chat companion
           </DialogDescription>

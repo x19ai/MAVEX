@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from "@/lib/user-store/provider"
 import { User } from "@phosphor-icons/react"
+import { formatWalletAddress } from "@/lib/utils"
 
 export function UserProfile() {
   const { user } = useUser()
@@ -23,7 +24,9 @@ export function UserProfile() {
         </div>
         <div>
           <h4 className="text-sm font-medium">{user?.display_name || "Guest User"}</h4>
-          <p className="text-muted-foreground text-sm">{user?.email || "Not signed in"}</p>
+          <p className="text-muted-foreground text-sm">
+            {user?.wallet_type === 'google' ? user?.email : user?.wallet_address || "Not signed in"}
+          </p>
         </div>
       </div>
     </div>

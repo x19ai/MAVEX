@@ -17,6 +17,7 @@ import { useUser } from "@/lib/user-store/provider"
 import { AppInfoTrigger } from "./app-info/app-info-trigger"
 import { FeedbackTrigger } from "./feedback/feedback-trigger"
 import { SettingsTrigger } from "./settings/settings-trigger"
+import { formatWalletAddress } from "@/lib/utils"
 
 export function UserMenu() {
   const { user } = useUser()
@@ -39,7 +40,7 @@ export function UserMenu() {
             </Avatar>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent>Profile</TooltipContent>
+        <TooltipContent>{user?.wallet_address}</TooltipContent>
       </Tooltip>
       <DropdownMenuContent
         className="w-56"
@@ -50,9 +51,9 @@ export function UserMenu() {
         {user && (
           <>
             <DropdownMenuItem className="flex flex-col items-start gap-0 no-underline hover:bg-transparent focus:bg-transparent">
-              <span>{user?.display_name}</span>
-              <span className="text-muted-foreground max-w-full truncate">
-                {user?.email}
+              <span>{user?.display_name || "Guest User"}</span>
+              <span className="text-muted-foreground max-w-full">
+                {user?.wallet_type === 'google' ? user?.email : formatWalletAddress(user?.wallet_address || "")}
               </span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

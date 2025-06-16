@@ -20,12 +20,15 @@ export function AgentsPage({
 }: AgentsPageProps) {
   const [openAgentId, setOpenAgentId] = useState<string | null>(null)
 
+  // Ensure curatedAgents is an array for safe use
+  const safeCuratedAgents = curatedAgents || []
+
   const randomAgents = useMemo(() => {
-    return curatedAgents
+    return safeCuratedAgents
       .filter((agent) => agent.id !== openAgentId)
       .sort(() => Math.random() - 0.5)
       .slice(0, 4)
-  }, [curatedAgents, openAgentId])
+  }, [safeCuratedAgents, openAgentId])
 
   const handleAgentClick = (agentId: string | null) => {
     setOpenAgentId(agentId)
@@ -55,7 +58,7 @@ export function AgentsPage({
         </div>
 
         <AgentFeaturedSection
-          agents={curatedAgents}
+          agents={safeCuratedAgents}
           moreAgents={randomAgents}
           handleAgentClick={handleAgentClick}
           openAgentId={openAgentId}

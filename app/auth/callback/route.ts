@@ -47,21 +47,27 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Try to insert user only if not exists
-    const { error: insertError } = await supabaseAdmin.from("users").insert({
+    const userDisplayName = user.user_metadata?.name || "Guest User"
+    const userProfileImage = user.user_metadata?.avatar_url || ""
+
+    const { error: upsertError } = await supabaseAdmin.from("users").upsert({
       id: user.id,
       email: user.email,
+      display_name: userDisplayName,
+      profile_image: userProfileImage,
       created_at: new Date().toISOString(),
       message_count: 0,
       premium: false,
       preferred_model: MODEL_DEFAULT,
-    })
+      wallet_type: 'google', // Mark as Google user
+      wallet_address: null, // Google users don't have a wallet address
+    }, { onConflict: 'id' })
 
-    if (insertError && insertError.code !== "23505") {
-      console.error("Error inserting user:", insertError)
+    if (upsertError) {
+      console.error("Error upserting user:", upsertError)
     }
   } catch (err) {
-    console.error("Unexpected user insert error:", err)
+    console.error("Unexpected user upsert error:", err)
   }
 
   const host = request.headers.get("host")
