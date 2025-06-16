@@ -24,7 +24,7 @@ export const FREE_MODELS_IDS = [
 
 export const MODEL_DEFAULT = "gpt-4.1-nano"
 
-export const APP_NAME = "Casper"
+export const APP_NAME = "MAVEX"
 export const APP_DOMAIN = "https://casperr.app"
 
 export const SUGGESTIONS = [

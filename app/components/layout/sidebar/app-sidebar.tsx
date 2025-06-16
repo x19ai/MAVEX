@@ -22,6 +22,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { HistoryTrigger } from "../../history/history-trigger"
 import { SidebarList } from "./sidebar-list"
+import { APP_NAME } from "@/lib/config"
 
 export function AppSidebar() {
   const isMobile = useBreakpoint(768)
@@ -124,7 +125,7 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <div className="text-sidebar-foreground text-sm font-medium">
-              Zola is open source
+              {APP_NAME} is open source
             </div>
             <div className="text-sidebar-foreground/70 text-xs">
               Star the repo on GitHub!

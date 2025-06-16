@@ -1,4 +1,4 @@
-import { APP_DOMAIN } from "@/lib/config"
+import { APP_DOMAIN, APP_NAME } from "@/lib/config"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
 import type { Metadata } from "next"
@@ -30,7 +30,7 @@ export async function generateMetadata({
     .single()
 
   const title = chat?.title || "Chat"
-  const description = "A chat in Zola"
+  const description = `A chat in ${APP_NAME}`
 
   return {
     title,
@@ -108,8 +108,8 @@ export default async function AgentChat({
       title={chatData.title || ""}
       subtitle={
         agentData
-          ? `A conversation with ${agentData.name}, an AI agent built in Zola`
-          : "A conversation in Zola"
+          ? `A conversation with ${agentData.name}, an AI agent built in ${APP_NAME}`
+          : `A conversation in ${APP_NAME}`
       }
     />
   )
