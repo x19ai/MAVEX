@@ -11,6 +11,7 @@ import { useAgent } from "@/lib/agent-store/provider"
 import { APP_NAME } from "@/lib/config"
 import { useUser } from "@/lib/user-store/provider"
 import { Info } from "@phosphor-icons/react"
+import Image from "next/image"
 import Link from "next/link"
 import { DialogPublish } from "./dialog-publish"
 import { HeaderSidebarTrigger } from "./header-sidebar-trigger"
@@ -38,8 +39,15 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             <div className="flex flex-1 items-center gap-2">
               <Link
                 href="/"
-                className="pointer-events-auto inline-flex items-center text-xl font-medium tracking-tight"
+                className="pointer-events-auto inline-flex items-center gap-2 text-xl font-medium tracking-tight"
               >
+                <Image
+                  src="/logo.svg"
+                  alt={`${APP_NAME} logo`}
+                  width={20}
+                  height={20}
+                  className="size-5"
+                />
                 {APP_NAME}
               </Link>
               {hasSidebar && isMobile && <HeaderSidebarTrigger />}
