@@ -34,8 +34,8 @@ export function useMessages() {
   return context
 }
 
-export function MessagesProvider({ children }: { children: React.ReactNode }) {
-  const [messages, setMessages] = useState<MessageAISDK[]>([])
+export function MessagesProvider({ children, initialMessages = [] }: { children: React.ReactNode, initialMessages?: MessageAISDK[] }) {
+  const [messages, setMessages] = useState<MessageAISDK[]>(initialMessages)
   const { chatId } = useChatSession()
 
   useEffect(() => {

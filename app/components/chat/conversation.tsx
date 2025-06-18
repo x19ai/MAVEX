@@ -25,60 +25,42 @@ export function Conversation({
 }: ConversationProps) {
   const initialMessageCount = useRef(messages.length)
 
+  // Deduplicate by id and sort by createdAt
+  const dedupedSortedMessages = Array.from(
+    new Map(messages.map((msg) => [msg.id, msg])).values()
+  ).sort((a, b) => {
+    // Fallback to 0 if createdAt is missing
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return aTime - bTime;
+  });
 
-  if (!messages || messages.length === 0)
+  if (!dedupedSortedMessages || dedupedSortedMessages.length === 0)
     return <div className="h-full w-full"></div>
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center overflow-x-hidden overflow-y-auto">
-      <div className="pointer-events-none absolute top-0 right-0 left-0 z-10 mx-auto flex w-full flex-col justify-center">
-        <div className="h-app-header bg-background flex w-full lg:hidden lg:h-0" />
-        <div className="h-app-header bg-background flex w-full mask-b-from-4% mask-b-to-100% lg:hidden" />
-      </div>
-      <ChatContainerRoot className="relative w-full">
-        <ChatContainerContent
-          className="flex w-full flex-col items-center pt-20 pb-4"
-          style={{
-            scrollbarGutter: "stable both-edges",
-            scrollbarWidth: "none",
-          }}
-        >
-          {messages?.map((message, index) => {
-            const isLast =
-              index === messages.length - 1 && status !== "submitted"
-            const hasScrollAnchor =
-              isLast && messages.length > initialMessageCount.current
-
-            return (
-              <Message
-                key={message.id}
-                id={message.id}
-                variant={message.role}
-                attachments={message.experimental_attachments}
-                isLast={isLast}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                onReload={onReload}
-                hasScrollAnchor={hasScrollAnchor}
-                parts={message.parts}
-                status={status}
-              >
-                {message.content}
-              </Message>
-            )
-          })}
-          {status === "submitted" &&
-            messages.length > 0 &&
-            messages[messages.length - 1].role === "user" && (
-              <div className="group min-h-scroll-anchor flex w-full max-w-3xl flex-col items-start gap-2 px-6 pb-2">
-                <Loader />
-              </div>
-            )}
-          <div className="absolute bottom-0 flex w-full max-w-3xl flex-1 items-end justify-end gap-4 px-6 pb-2">
-            <ScrollButton className="absolute top-[-50px] right-[30px]" />
-          </div>
-        </ChatContainerContent>
-      </ChatContainerRoot>
-    </div>
+    <ChatContainerRoot className="relative w-full">
+      <ChatContainerContent className="flex w-full flex-col items-center pt-20 pb-4">
+        {dedupedSortedMessages.map((message, idx) => (
+          <Message
+            key={message.id}
+            variant={message.role}
+            id={message.id}
+            attachments={message.experimental_attachments}
+            isLast={idx === dedupedSortedMessages.length - 1}
+            onDelete={onDelete}
+            onEdit={onEdit}
+            onReload={onReload}
+            hasScrollAnchor={idx === dedupedSortedMessages.length - 1}
+            parts={message.parts}
+            status={status}
+          >
+            {message.content}
+          </Message>
+        ))}
+        <ScrollButton />
+      </ChatContainerContent>
+      {status === "streaming" && <Loader />}
+    </ChatContainerRoot>
   )
 }

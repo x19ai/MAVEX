@@ -31,14 +31,18 @@ export async function getMessagesFromDb(
     ...message,
     id: String(message.id),
     content: message.content ?? "",
-    createdAt: new Date(message.created_at || ""),
+    createdAt: message.created_at ? new Date(message.created_at) : new Date(0),
     parts: (message?.parts as MessageAISDK["parts"]) || undefined,
   }))
 
   console.log(`Retrieved ${messages.length} messages from database for chat ${chatId}:`, 
     messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })))
 
-  return messages
+  const uniqueMessages = Array.from(
+    new Map(messages.map(msg => [msg.id, msg])).values()
+  );
+
+  return uniqueMessages
 }
 
 async function insertMessageToDb(chatId: string, message: MessageAISDK, userId: string) {

@@ -8,6 +8,7 @@ const DEFAULT_STEP = 0
 export async function saveFinalAssistantMessage(
   supabase: SupabaseClient<Database>,
   chatId: string,
+  userId: string,
   messages: Message[]
 ) {
   console.log("saveFinalAssistantMessage called with:", {
@@ -32,6 +33,7 @@ export async function saveFinalAssistantMessage(
         role: "assistant",
         content: lastAssistantMessage.content,
         created_at: new Date().toISOString(),
+        user_id: userId,
       })
 
       if (error) {
@@ -113,6 +115,7 @@ export async function saveFinalAssistantMessage(
     role: "assistant",
     content: finalPlainText || "",
     parts: parts as unknown as Json,
+    user_id: userId,
   })
 
   if (error) {

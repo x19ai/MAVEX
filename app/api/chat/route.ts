@@ -134,16 +134,15 @@ export async function POST(req: Request) {
             content: typeof m.content === 'string' ? m.content.substring(0, 50) : 'complex content'
           }))
         })
-        
         if (supabase) {
           try {
             await storeAssistantMessage({
               supabase,
               chatId,
-              messages:
-                response.messages as unknown as import("@/app/types/api.types").Message[],
+              userId,
+              messages: response.messages as unknown as import("@/app/types/api.types").Message[],
             })
-            console.log("Assistant message saved successfully in API route")
+            console.log("Assistant message saved successfully in API route (forced save)")
           } catch (error) {
             console.error("Failed to save assistant message in API route:", error)
           }

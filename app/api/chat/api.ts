@@ -57,11 +57,12 @@ export async function trackSpecialAgentUsage(supabase: SupabaseClientType, userI
 export async function storeAssistantMessage({
   supabase,
   chatId,
+  userId,
   messages,
-}: StoreAssistantMessageParams): Promise<void> {
+}: StoreAssistantMessageParams & { userId: string }): Promise<void> {
   if (!supabase) return
   try {
-    await saveFinalAssistantMessage(supabase, chatId, messages)
+    await saveFinalAssistantMessage(supabase, chatId, userId, messages)
   } catch (err) {
     console.error("Failed to save assistant messages:", err)
   }

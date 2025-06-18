@@ -29,6 +29,13 @@ export default function Article({
   agentSlug,
   agentName,
 }: ArticleProps) {
+  // Sort messages by created_at before rendering
+  const sortedMessages = [...messages].sort((a, b) => {
+    const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return aTime - bTime;
+  });
+
   return (
     <>
       <Header />
@@ -74,7 +81,7 @@ export default function Article({
           </Link>
         </div>
         <div className="mt-20 w-full">
-          {messages.map((message) => {
+          {sortedMessages.map((message) => {
             const parts = message?.parts as MessageAISDK["parts"]
             const sources = getSources(parts)
 

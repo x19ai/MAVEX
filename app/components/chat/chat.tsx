@@ -169,10 +169,14 @@ export function Chat() {
       if (!message.id) {
         message.id = uuidv4();
       }
+      if (!message.createdAt) {
+        message.createdAt = new Date();
+      }
       console.log("onFinish called with message:", { 
         role: message.role, 
         content: message.content.substring(0, 100) + '...',
-        id: message.id 
+        id: message.id,
+        createdAt: message.createdAt
       })
       
       // Save to local cache
