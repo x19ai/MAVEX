@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/client"
 import { isSupabaseEnabled } from "@/lib/supabase/config"
 import type { Message as MessageAISDK } from "ai"
 import { readFromIndexedDB, writeToIndexedDB } from "../persist"
+import { v4 as uuidv4 } from 'uuid'
 
 export async function getMessagesFromDb(
   chatId: string
@@ -26,26 +27,46 @@ export async function getMessagesFromDb(
     return []
   }
 
-  return data.map((message) => ({
+  const messages = data.map((message) => ({
     ...message,
     id: String(message.id),
     content: message.content ?? "",
     createdAt: new Date(message.created_at || ""),
     parts: (message?.parts as MessageAISDK["parts"]) || undefined,
   }))
+
+  console.log(`Retrieved ${messages.length} messages from database for chat ${chatId}:`, 
+    messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })))
+
+  return messages
 }
 
-async function insertMessageToDb(chatId: string, message: MessageAISDK) {
+async function insertMessageToDb(chatId: string, message: MessageAISDK, userId: string) {
   const supabase = createClient()
-  if (!supabase) return
-
-  await supabase.from("messages").insert({
+  if (!supabase) {
+    console.error("No Supabase client available for message insertion")
+    return
+  }
+  if (!message.id) {
+    message.id = uuidv4();
+  }
+  const payload = {
     chat_id: chatId,
     role: message.role,
     content: message.content,
     experimental_attachments: message.experimental_attachments,
     created_at: message.createdAt?.toISOString() || new Date().toISOString(),
-  })
+    user_id: userId,
+  };
+  console.log("Payload for assistant insert:", payload);
+  const { error } = await supabase.from("messages").insert(payload);
+
+  if (error) {
+    console.error("Failed to insert message to database:", error, payload);
+    throw error;
+  } else {
+    console.log(`Successfully saved ${message.role} message to database for chat ${chatId}`);
+  }
 }
 
 async function insertMessagesToDb(chatId: string, messages: MessageAISDK[]) {
@@ -103,13 +124,40 @@ export async function cacheMessages(
 
 export async function addMessage(
   chatId: string,
-  message: MessageAISDK
+  message: MessageAISDK,
+  userId: string
 ): Promise<void> {
-  await insertMessageToDb(chatId, message)
-  const current = await getCachedMessages(chatId)
-  const updated = [...current, message]
-
-  await writeToIndexedDB("messages", { id: chatId, messages: updated })
+  if (!message.id) {
+    message.id = uuidv4();
+  }
+  console.log("addMessage called:", { chatId, role: message.role, content: message.content?.substring(0, 50), id: message.id, userId });
+  
+  try {
+    // Try to save to database if Supabase is enabled
+    if (isSupabaseEnabled) {
+      await insertMessageToDb(chatId, message, userId);
+      console.log("Message saved to database successfully");
+    } else {
+      console.log("Supabase not enabled, skipping database save");
+    }
+    
+    // Always save to local cache
+    const current = await getCachedMessages(chatId)
+    const updated = [...current, message]
+    await writeToIndexedDB("messages", { id: chatId, messages: updated })
+    console.log("Message saved to local cache successfully")
+  } catch (error) {
+    console.error("Error in addMessage:", error)
+    // Even if database save fails, try to save to local cache
+    try {
+      const current = await getCachedMessages(chatId)
+      const updated = [...current, message]
+      await writeToIndexedDB("messages", { id: chatId, messages: updated })
+      console.log("Message saved to local cache as fallback")
+    } catch (cacheError) {
+      console.error("Failed to save to local cache:", cacheError)
+    }
+  }
 }
 
 export async function setMessages(

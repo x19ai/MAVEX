@@ -74,6 +74,7 @@ export function useChatPreview(): UseChatPreviewReturn {
                 created_at:
                   msg.createdAt?.toISOString() || new Date().toISOString(),
               }))
+            console.log("Chat preview - Using cached messages:", cachedMessages.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
             setMessages(cachedMessages)
           }
         } else {
@@ -81,6 +82,8 @@ export function useChatPreview(): UseChatPreviewReturn {
           setIsLoading(true)
 
           const fresh = await getMessagesFromDb(chatId)
+          console.log("Chat preview - Fresh messages from database:", fresh.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
+          
           if (
             fresh &&
             currentRequestRef.current === chatId &&
@@ -98,6 +101,7 @@ export function useChatPreview(): UseChatPreviewReturn {
                 created_at:
                   msg.createdAt?.toISOString() || new Date().toISOString(),
               }))
+            console.log("Chat preview - Using fresh messages:", freshMessages.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
             setMessages(freshMessages)
           }
         }

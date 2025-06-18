@@ -2,6 +2,8 @@
 
 import { toast } from "@/components/ui/toast"
 import { useChatSession } from "@/lib/chat-store/session/provider"
+import { createClient } from "@/lib/supabase/client"
+import { isSupabaseEnabled } from "@/lib/supabase/config"
 import type { Message as MessageAISDK } from "ai"
 import { createContext, useContext, useEffect, useState } from "react"
 import { writeToIndexedDB } from "../persist"
@@ -46,15 +48,38 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     if (!chatId) return
 
     const load = async () => {
-      const cached = await getCachedMessages(chatId)
-      setMessages(cached)
-
+      console.log("Loading messages for chat:", chatId)
+      
       try {
-        const fresh = await getMessagesFromDb(chatId)
-        setMessages(fresh)
-        cacheMessages(chatId, fresh)
+        // First try to load from cache
+        const cached = await getCachedMessages(chatId)
+        console.log("Loaded cached messages:", cached.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
+        
+        if (cached.length > 0) {
+          setMessages(cached)
+        }
+
+        // Then try to load from database if Supabase is enabled
+        if (isSupabaseEnabled) {
+          try {
+            const fresh = await getMessagesFromDb(chatId)
+            console.log("Loaded fresh messages from DB:", fresh.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
+            
+            if (fresh.length > 0) {
+              setMessages(fresh)
+              // Update cache with fresh data
+              await cacheMessages(chatId, fresh)
+            }
+          } catch (dbError) {
+            console.error("Failed to fetch messages from database:", dbError)
+            // If database fails, keep using cached messages
+          }
+        } else {
+          console.log("Supabase not enabled, using cached messages only")
+        }
       } catch (error) {
-        console.error("Failed to fetch messages:", error)
+        console.error("Failed to load messages:", error)
+        setMessages([])
       }
     }
 

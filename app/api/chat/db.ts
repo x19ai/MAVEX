@@ -10,6 +10,41 @@ export async function saveFinalAssistantMessage(
   chatId: string,
   messages: Message[]
 ) {
+  console.log("saveFinalAssistantMessage called with:", {
+    chatId,
+    messageCount: messages.length,
+    messages: messages.map(m => ({ 
+      role: m.role, 
+      contentType: typeof m.content,
+      content: typeof m.content === 'string' ? m.content.substring(0, 100) : 'array'
+    }))
+  })
+
+  // Handle simple string content (most common case)
+  const assistantMessages = messages.filter(msg => msg.role === "assistant")
+  if (assistantMessages.length > 0) {
+    const lastAssistantMessage = assistantMessages[assistantMessages.length - 1]
+    
+    // If content is a simple string, save it directly
+    if (typeof lastAssistantMessage.content === 'string') {
+      const { error } = await supabase.from("messages").insert({
+        chat_id: chatId,
+        role: "assistant",
+        content: lastAssistantMessage.content,
+        created_at: new Date().toISOString(),
+      })
+
+      if (error) {
+        console.error("Error saving assistant message (string):", error)
+        throw new Error(`Failed to save assistant message: ${error.message}`)
+      } else {
+        console.log("Assistant message saved successfully (string).")
+        return
+      }
+    }
+  }
+
+  // Handle complex content with parts (original logic)
   const parts: ContentPart[] = []
   const toolMap = new Map<string, ContentPart>()
   const textParts: string[] = []

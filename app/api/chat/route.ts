@@ -126,13 +126,31 @@ export async function POST(req: Request) {
       },
 
       onFinish: async ({ response }) => {
+        console.log("API onFinish called with response:", {
+          chatId,
+          messageCount: response.messages.length,
+          messages: response.messages.map(m => ({ 
+            role: m.role, 
+            content: typeof m.content === 'string' ? m.content.substring(0, 50) : 'complex content'
+          }))
+        })
+        
         if (supabase) {
-          await storeAssistantMessage({
-            supabase,
-            chatId,
-            messages:
-              response.messages as unknown as import("@/app/types/api.types").Message[],
-          })
+          try {
+            await storeAssistantMessage({
+              supabase,
+              chatId,
+              messages:
+                response.messages as unknown as import("@/app/types/api.types").Message[],
+            })
+            console.log("Assistant message saved successfully in API route")
+          } catch (error) {
+            console.error("Failed to save assistant message in API route:", error)
+          }
+        } else {
+          console.log("No supabase client available for assistant message saving - Supabase not configured")
+          // Fallback: Save to local storage via client-side
+          console.log("Messages will be saved locally via client-side cache only")
         }
       },
     })

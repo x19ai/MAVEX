@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { useAgent } from "@/lib/agent-store/provider"
 import { getModelInfo } from "@/lib/models"
 import { ArrowUp, Stop, Warning } from "@phosphor-icons/react"
-import React, { useCallback, useEffect, useMemo } from "react"
+import React, { useCallback, useEffect, useMemo, useRef } from "react"
 import { PromptSystem } from "../suggestions/prompt-system"
 import { AgentCommand } from "./agent-command"
 import { ButtonFileUpload } from "./button-file-upload"
@@ -20,6 +20,7 @@ import { ButtonSearch } from "./button-search"
 import { FileList } from "./file-list"
 import { SelectedAgent } from "./selected-agent"
 import { APP_NAME } from "@/lib/config"
+import { v4 as uuidv4 } from 'uuid'
 
 type ChatInputProps = {
   value: string
@@ -59,6 +60,7 @@ export function ChatInput({
   setEnableSearch,
   enableSearch,
 }: ChatInputProps) {
+  const fileCounter = useRef(0)
   const { currentAgent, curatedAgents, userAgents } = useAgent()
 
   const agentCommand = useAgentCommand({
@@ -136,7 +138,7 @@ export function ChatInput({
             if (file) {
               const newFile = new File(
                 [file],
-                `pasted-image-${Date.now()}.${file.type.split("/")[1]}`,
+                `pasted-image-${uuidv4()}.${file.type.split("/")[1]}`,
                 { type: file.type }
               )
               imageFiles.push(newFile)

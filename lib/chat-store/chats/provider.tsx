@@ -1,7 +1,7 @@
 "use client"
 
 import { toast } from "@/components/ui/toast"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useRef } from "react"
 import { MODEL_DEFAULT, SYSTEM_PROMPT_DEFAULT } from "../../config"
 import type { Chats } from "../types"
 import {
@@ -61,6 +61,7 @@ export function ChatsProvider({
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const [chats, setChats] = useState<Chats[]>([])
+  const optimisticIdCounter = useRef(0)
 
   useEffect(() => {
     if (!userId) return
@@ -133,7 +134,7 @@ export function ChatsProvider({
     if (!userId) return
     const prev = [...chats]
 
-    const optimisticId = `optimistic-${Date.now().toString()}`
+    const optimisticId = `optimistic-${++optimisticIdCounter.current}`
     const optimisticChat = {
       id: optimisticId,
       title: title || (agentId ? `Conversation with agent` : "New Chat"),
