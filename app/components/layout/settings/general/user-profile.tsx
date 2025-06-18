@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from "@/lib/user-store/provider"
 import { User } from "@phosphor-icons/react"
 import { formatWalletAddress } from "@/lib/utils"
+import { TokenBalance } from "./token-balance"
 
 export function UserProfile() {
   const { user } = useUser()
@@ -29,6 +30,7 @@ export function UserProfile() {
           </p>
         </div>
       </div>
+      <TokenBalance />
     </div>
   )
 }

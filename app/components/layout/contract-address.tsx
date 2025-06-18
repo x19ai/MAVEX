@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/toast"
 import { Copy } from "@phosphor-icons/react"
 import { useState } from "react"
+import { MAVEX_CONFIG } from "@/lib/config"
 
 export function ContractAddress() {
   const [copied, setCopied] = useState(false)
-  const contractAddress = "CA"
+  const contractAddress = MAVEX_CONFIG.ADDRESS
   const displayAddress = `${contractAddress.slice(0, 3)}..`
 
   const handleCopy = async () => {

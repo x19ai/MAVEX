@@ -123,3 +123,19 @@ export const CURATED_AGENTS_SLUGS = [
   "mavex/helper",
   "github/shadcn/ui",
 ]
+
+// MAVEX Token Configuration
+export const MAVEX_CONFIG = {
+  ADDRESS: "CA",
+  TOKEN_SYMBOL: "$MAVEX",
+  TOKEN_NAME: "Mavex Token",
+  NETWORK: "mainnet-beta",
+  API: {
+    JUPITER: "https://price.jup.ag/v4",
+    RPC: "https://api.mainnet-beta.solana.com",
+    BACKUP_RPC: [
+      "https://solana-api.projectserum.com",
+      "https://ssc-dao.genesysgo.net"
+    ]
+  }
+} as const
