@@ -10,13 +10,13 @@ export const dynamic = "force-static"
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ agentSlug?: string; chatId: string }>
+  params: { agentSlug?: string; chatId: string }
 }): Promise<Metadata> {
   if (!isSupabaseEnabled) {
     return notFound()
   }
 
-  const { chatId } = await params
+  const { chatId } = params
   const supabase = await createClient()
 
   if (!supabase) {
