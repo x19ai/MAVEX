@@ -5,7 +5,11 @@ import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-export default async function Page({ params }: { params: { chatId: string } }) {
+type PageProps = {
+  params: { chatId: string }
+}
+
+export default async function Page({ params }: PageProps) {
   if (isSupabaseEnabled) {
     const supabase = await createClient()
     if (supabase) {
@@ -17,7 +21,7 @@ export default async function Page({ params }: { params: { chatId: string } }) {
   }
 
   // Fetch messages from Supabase for SSR hydration safety
-  let initialMessages = []
+  let initialMessages: any[] = []
   if (isSupabaseEnabled && params?.chatId) {
     const supabase = await createClient()
     if (supabase) {
