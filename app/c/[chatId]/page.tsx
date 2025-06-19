@@ -5,11 +5,7 @@ import { isSupabaseEnabled } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-type PageProps = {
-  params: { chatId: string }
-}
-
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: { params: { chatId: string } }) {
   if (isSupabaseEnabled) {
     const supabase = await createClient()
     if (supabase) {
