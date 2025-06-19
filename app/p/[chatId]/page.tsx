@@ -52,13 +52,13 @@ export async function generateMetadata({
 export default async function AgentChat({
   params,
 }: {
-  params: Promise<{ agentSlug?: string; chatId: string }>
+  params: { agentSlug?: string; chatId: string }
 }) {
   if (!isSupabaseEnabled) {
     return notFound()
   }
 
-  const { agentSlug, chatId } = await params
+  const { agentSlug, chatId } = params
   const supabase = await createClient()
 
   if (!supabase) {
