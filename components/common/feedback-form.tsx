@@ -10,7 +10,7 @@ import { useState } from "react"
 import { APP_NAME } from "@/lib/config"
 
 const TRANSITION_CONTENT = {
-  ease: "easeOut",
+  ease: "easeOut" as const,
   duration: 0.2,
 }
 
