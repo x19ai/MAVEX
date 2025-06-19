@@ -114,7 +114,6 @@ export async function saveFinalAssistantMessage(
     chat_id: chatId,
     role: "assistant",
     content: finalPlainText || "",
-    parts: parts as unknown as Json,
     user_id: userId,
   })
 
