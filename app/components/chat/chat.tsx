@@ -70,7 +70,7 @@ export function Chat() {
   } = useChats()
 
   const currentChat = useMemo(
-    () => (chatId ? getChatById(chatId) : null),
+    () => (chatId ? getChatById(chatId) || null : null),
     [chatId, getChatById]
   )
 
