@@ -24,6 +24,20 @@ const nextConfig: NextConfig = withBundleAnalyzer({
     // @todo: remove before going live
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; script-src 'self'; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;",
+          },
+        ],
+      },
+    ];
+  },
+  turbopack: {},
 })
 
 export default nextConfig

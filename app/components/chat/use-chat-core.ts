@@ -22,7 +22,7 @@ type UseChatCoreProps = {
   setFiles: (files: File[]) => void
   checkLimitsAndNotify: (uid: string) => Promise<boolean>
   cleanupOptimisticAttachments: (attachments?: any[]) => void
-  ensureChatExists: (uid: string) => Promise<string | null>
+  ensureChatExists: (uid: string, messages: Message[]) => Promise<string | null>
   handleFileUploads: (
     uid: string,
     chatId: string
@@ -122,55 +122,59 @@ export function useChatCore({
 
   // Submit action
   const submit = useCallback(async () => {
+    console.log('submit called')
     setIsSubmitting(true)
 
-    const uid = await getOrCreateGuestUserId(user)
-    if (!uid) {
-      setIsSubmitting(false)
-      return
-    }
+    try {
+      const messageContent = input
+      if (!messageContent.trim()) {
+        return
+      }
 
-    const optimisticId = `optimistic-${uuidv4()}`
-    const optimisticAttachments =
-      files.length > 0 ? createOptimisticAttachments(files) : []
+      const uid = await getOrCreateGuestUserId(user)
+      if (!uid) {
+        return
+      }
 
-    const optimisticMessage = {
-      id: optimisticId,
-      content: input,
-      role: "user" as const,
-      createdAt: new Date(),
-      experimental_attachments:
-        optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
-    }
+      const optimisticId = `optimistic-${uuidv4()}`
+      const optimisticAttachments =
+        files.length > 0 ? createOptimisticAttachments(files) : []
 
-    setMessages((prev) => [...prev, optimisticMessage])
-    setInput("")
+      const optimisticMessage: Message = {
+        id: optimisticId,
+        content: messageContent,
+        role: "user" as const,
+        createdAt: new Date(),
+        experimental_attachments:
+          optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
+      }
 
-    const submittedFiles = [...files]
-    setFiles([])
+      setMessages(prev => [...prev, optimisticMessage])
+      setInput("")
 
-    // Prepare API call logic
-    const apiCall = async () => {
+      const submittedFiles = [...files]
+      setFiles([])
+
       const allowed = await checkLimitsAndNotify(uid)
       if (!allowed) {
-        setMessages((prev) => prev.filter((m) => m.id !== optimisticId))
+        setMessages(prev => prev.filter(m => m.id !== optimisticId))
         cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
         return
       }
 
-      const currentChatId = await ensureChatExists(uid)
+      const currentChatId = await ensureChatExists(uid, messages)
       if (!currentChatId) {
-        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticId))
         cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
         return
       }
 
-      if (input.length > MESSAGE_MAX_LENGTH) {
+      if (messageContent.length > MESSAGE_MAX_LENGTH) {
         toast({
           title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
           status: "error",
         })
-        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticId))
         cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
         return
       }
@@ -179,7 +183,7 @@ export function useChatCore({
       if (submittedFiles.length > 0) {
         attachments = await handleFileUploads(uid, currentChatId)
         if (attachments === null) {
-          setMessages((prev) => prev.filter((m) => m.id !== optimisticId))
+          setMessages(prev => prev.filter(m => m.id !== optimisticId))
           cleanupOptimisticAttachments(
             optimisticMessage.experimental_attachments
           )
@@ -198,24 +202,40 @@ export function useChatCore({
         },
         experimental_attachments: attachments || undefined,
       }
-
-      handleSubmit(undefined, options)
-      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
-      cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
-      cacheAndAddMessage(optimisticMessage)
-      clearDraft()
-
+      
+      const messageToSend: Message = {
+        id: optimisticId,
+        role: 'user',
+        content: messageContent,
+        createdAt: optimisticMessage.createdAt,
+        experimental_attachments: optimisticMessage.experimental_attachments
+      }
+      
+      append(messageToSend, options)
+      
+      setMessages(prev => prev.filter(m => m.id !== optimisticId))
+      
       if (messages.length > 0) {
         bumpChat(currentChatId)
       }
-    }
+      
+      clearDraft()
 
-    await measureAsync("send-message-api", apiCall)
+    } catch (error) {
+      toast({
+        title: "An error occurred while sending the message.",
+        status: "error",
+      })
+      // Note: optimistic message cleanup on general error is complex and will be handled if it becomes an issue.
+    } finally {
+      setIsSubmitting(false)
+    }
   }, [
     user,
     files,
     createOptimisticAttachments,
     input,
+    messages,
     setMessages,
     setInput,
     setFiles,
@@ -233,6 +253,7 @@ export function useChatCore({
     messages.length,
     bumpChat,
     setIsSubmitting,
+    append,
   ])
 
   // Handle suggestion
@@ -263,7 +284,7 @@ export function useChatCore({
           return
         }
 
-        const currentChatId = await ensureChatExists(uid)
+        const currentChatId = await ensureChatExists(uid, messages)
 
         if (!currentChatId) {
           setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
@@ -302,6 +323,7 @@ export function useChatCore({
       append,
       checkLimitsAndNotify,
       isAuthenticated,
+      messages,
       setMessages,
       setIsSubmitting,
     ]

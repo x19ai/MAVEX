@@ -76,7 +76,7 @@ export function useChatOperations({
     }
   }
 
-  const ensureChatExists = async (userId: string) => {
+  const ensureChatExists = async (userId: string, messages: Message[]) => {
     if (!isAuthenticated) {
       const storedGuestChatId = localStorage.getItem("guestChatId")
       if (storedGuestChatId) return storedGuestChatId

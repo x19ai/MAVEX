@@ -74,7 +74,7 @@ export function Chat() {
     [chatId, getChatById]
   )
 
-  const { messages: initialMessages, cacheAndAddMessage } = useMessages()
+  const { messages: messagesFromProvider, cacheAndAddMessage } = useMessages()
   const { user } = useUser()
   const { preferences } = useUserPreferences()
   const { draftValue, clearDraft } = useChatDraft(chatId)
@@ -92,7 +92,7 @@ export function Chat() {
 
   // Model selection
   const { selectedModel, handleModelChange } = useModel({
-    currentChat: currentChat || null,
+    currentChat: currentChat,
     user,
     updateChatModel,
     chatId,
@@ -106,28 +106,13 @@ export function Chat() {
     [user?.system_prompt]
   )
 
-  // --- FIX: Initialize useChatOperations FIRST ---
-  // We'll pass dummy setMessages/setInput for now, then replace them after useChatCore is initialized
-  const [chatCoreState, setChatCoreState] = useState<any>(null)
-  const chatOps = useChatOperations({
-    isAuthenticated,
-    chatId,
-    messages: chatCoreState?.messages || initialMessages,
-    input: chatCoreState?.input || draftValue,
-    selectedModel,
-    systemPrompt,
-    createNewChat,
-    setHasDialogAuth,
-    setMessages: chatCoreState?.setMessages || (() => {}),
-    setInput: chatCoreState?.handleInputChange || (() => {}),
-  })
-  const checkLimitsAndNotify = chatOps.checkLimitsAndNotify
-  const ensureChatExists = chatOps.ensureChatExists
-  const { handleDelete, handleEdit } = chatOps
+  // --- Create refs for checkLimitsAndNotify and ensureChatExists ---
+  const checkLimitsAndNotifyRef = useRef((..._args: any[]) => Promise.resolve(true))
+  const ensureChatExistsRef = useRef((..._args: any[]) => Promise.resolve(chatId))
 
-  // --- Now initialize useChatCore with correct functions ---
+  // --- Initialize useChatCore with refs ---
   const chatCore = useChatCore({
-    initialMessages,
+    initialMessages: [],
     draftValue,
     cacheAndAddMessage,
     chatId,
@@ -135,25 +120,42 @@ export function Chat() {
     files,
     createOptimisticAttachments,
     setFiles,
-    checkLimitsAndNotify,
+    checkLimitsAndNotify: (...args) => checkLimitsAndNotifyRef.current(...args),
     cleanupOptimisticAttachments,
-    ensureChatExists,
+    ensureChatExists: (...args) => ensureChatExistsRef.current(...args),
     handleFileUploads,
     selectedModel,
     clearDraft,
     bumpChat,
   })
 
-  // Save chatCore state for chatOps to use
+  // --- Sync messages from provider to chat core ---
   useEffect(() => {
-    setChatCoreState({
-      messages: chatCore.messages,
-      input: chatCore.input,
-      setMessages: chatCore.setMessages,
-      handleInputChange: chatCore.handleInputChange,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatCore.messages, chatCore.input, chatCore.setMessages, chatCore.handleInputChange])
+    if (messagesFromProvider.length > 0) {
+      chatCore.setMessages(messagesFromProvider)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messagesFromProvider])
+
+  // --- Now initialize useChatOperations with real setters from chatCore ---
+  const chatOps = useChatOperations({
+    isAuthenticated,
+    chatId,
+    messages: chatCore.messages,
+    input: chatCore.input,
+    selectedModel,
+    systemPrompt,
+    createNewChat,
+    setHasDialogAuth,
+    setMessages: chatCore.setMessages,
+    setInput: chatCore.handleInputChange,
+  })
+
+  // --- After chatOps is initialized, update the refs ---
+  useEffect(() => {
+    checkLimitsAndNotifyRef.current = chatOps.checkLimitsAndNotify
+    ensureChatExistsRef.current = chatOps.ensureChatExists
+  }, [chatOps.checkLimitsAndNotify, chatOps.ensureChatExists])
 
   const {
     messages,
@@ -212,13 +214,13 @@ export function Chat() {
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
-      messages,
+      messages: chatCore.messages,
       status,
-      onDelete: handleDelete,
-      onEdit: handleEdit,
+      onDelete: chatOps.handleDelete,
+      onEdit: chatOps.handleEdit,
       onReload: handleReload,
     }),
-    [messages, status, handleDelete, handleEdit, handleReload]
+    [chatCore.messages, status, chatOps.handleDelete, chatOps.handleEdit, handleReload]
   )
 
   // Memoize the chat input props
@@ -233,7 +235,7 @@ export function Chat() {
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
       hasSuggestions:
-        preferences.promptSuggestions && !chatId && messages.length === 0,
+        preferences.promptSuggestions && !chatId && chatCore.messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,
@@ -253,7 +255,7 @@ export function Chat() {
       handleFileRemove,
       preferences.promptSuggestions,
       chatId,
-      messages.length,
+      chatCore.messages.length,
       handleModelChange,
       selectedModel,
       isAuthenticated,

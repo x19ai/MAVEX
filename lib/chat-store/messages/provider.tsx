@@ -50,46 +50,68 @@ export function MessagesProvider({ children, initialMessages = [] }: { children:
   }, [chatId])
 
   useEffect(() => {
-    if (!chatId || !isHydrated) return
+    if (!chatId || !isHydrated) return;
 
     const load = async () => {
-      console.log("Loading messages for chat:", chatId)
-      
+      console.log("Loading messages for chat:", chatId);
+
+      let finalMessages: MessageAISDK[] = [];
+      let loadedFromCache = false;
+
       try {
-        // First try to load from cache
-        const cached = await getCachedMessages(chatId)
-        console.log("Loaded cached messages:", cached.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
-        
+        // First, try to load from the local cache to show something immediately.
+        const cached = await getCachedMessages(chatId);
         if (cached.length > 0) {
-          setMessages(cached)
+          console.log(
+            "Loaded cached messages:",
+            cached.map(m => ({
+              role: m.role,
+              content: m.content.substring(0, 30),
+            }))
+          );
+          finalMessages = cached;
+          loadedFromCache = true;
+          setMessages(finalMessages); // Show cached messages immediately
         }
 
-        // Then try to load from database if Supabase is enabled
+        // Then, always try to fetch from the database to get the most up-to-date information.
         if (isSupabaseEnabled) {
           try {
-            const fresh = await getMessagesFromDb(chatId)
-            console.log("Loaded fresh messages from DB:", fresh.map(m => ({ role: m.role, content: m.content.substring(0, 30) })))
-            
+            const fresh = await getMessagesFromDb(chatId);
+            console.log(
+              "Loaded fresh messages from DB:",
+              fresh.map(m => ({
+                role: m.role,
+                content: m.content.substring(0, 30),
+              }))
+            );
+
             if (fresh.length > 0) {
-              setMessages(fresh)
+              finalMessages = fresh;
               // Update cache with fresh data
-              await cacheMessages(chatId, fresh)
+              await cacheMessages(chatId, fresh);
+            } else if (loadedFromCache) {
+              // If DB is empty but we had cached messages, it might be a new chat not yet persisted.
+              // Keep the cached messages for now.
             }
+
           } catch (dbError) {
-            console.error("Failed to fetch messages from database:", dbError)
-            // If database fails, keep using cached messages
+            console.error("Failed to fetch messages from database:", dbError);
+            // If the database fails, we rely on the cached messages if they exist.
           }
         } else {
-          console.log("Supabase not enabled, using cached messages only")
+          console.log("Supabase not enabled, using cached messages only");
         }
       } catch (error) {
-        console.error("Failed to load messages:", error)
-        setMessages([])
+        console.error("Failed to load messages:", error);
+      } finally {
+        // Set the final state after all operations are complete.
+        setMessages(finalMessages);
       }
-    }
+    };
 
-    load()
-  }, [chatId, isHydrated])
+    load();
+  }, [chatId, isHydrated]);
 
   const refresh = async () => {
     if (!chatId) return

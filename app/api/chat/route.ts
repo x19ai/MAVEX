@@ -80,21 +80,6 @@ export async function POST(req: Request) {
         // Get agent configuration (with caching)
         agentId ? measureAsync("get-agent-config", () => getAgentConfig(agentId)) : Promise.resolve(null),
       ]),
-      // Non-critical operations that can happen in background
-      background: Promise.resolve().then(async () => {
-        if (supabase && userMessage?.role === "user") {
-          // Log user message in background (non-blocking)
-          logUserMessage({
-            supabase,
-            userId,
-            chatId,
-            content: userMessage.content,
-            attachments: userMessage.experimental_attachments as Attachment[],
-            model,
-            isAuthenticated,
-          }).catch(console.error) // Don't block on errors
-        }
-      })
     }
 
     // Wait for essential operations
@@ -102,6 +87,19 @@ export async function POST(req: Request) {
 
     if (!modelConfig || !modelConfig.apiSdk) {
       throw new Error(`Model ${model} not found`)
+    }
+
+    if (supabase && userMessage?.role === "user") {
+      // Log user message in background (non-blocking)
+      logUserMessage({
+        supabase,
+        userId,
+        chatId,
+        content: userMessage.content,
+        attachments: userMessage.experimental_attachments as Attachment[],
+        model,
+        isAuthenticated,
+      }).catch(console.error) // Don't block on errors
     }
 
     const effectiveSystemPrompt =
