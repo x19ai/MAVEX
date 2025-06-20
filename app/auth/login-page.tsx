@@ -107,36 +107,49 @@ export default function LoginPage() {
 
       // The user is now signed in
       if (data?.user) {
-        // Get a random animal image from the 1x1 directory
-        const animalImages = [
-          'Dolphine.png', 'Fox.png', 'Tiger.png', 'Chameleon.png', 'Elephant.png',
-          'Zebra.png', 'Crocodile.png', 'Cow.png', 'Seal.png', 'Giraffe.png',
-          'Dog.png', 'Cat.png', 'Jaguar.png', 'Orangutan.png', 'Octopus.png',
-          'Snake.png', 'Monkey.png', 'Squirrel.png', 'Cheetah.png', 'Panda.png',
-          'Koala.png', 'Tasmanian Devil.png', 'Pelican.png', 'Goose.png',
-          'Bald Eagle.png', 'raven.png', 'Penguin.png', 'Flamingo.png',
-          'Lion.png', 'Kangaroo.png', 'Cub.png', 'Parrot.png', 'Turtle.png'
-        ]
-        const randomAnimal = animalImages[Math.floor(Math.random() * animalImages.length)]
-        const animalName = randomAnimal.split('.')[0] // Extract name without extension
-        
-        // Create or update user profile in the users table
-        const { error: upsertError } = await supabase
+        const { data: existingUser, error: fetchError } = await supabase
           .from('users')
-          .upsert({
-            id: data.user.id,
-            email: `${animalName}@phantom.wallet`,
-            display_name: animalName,
-            profile_image: `/1x1/${randomAnimal}`,
-            anonymous: false,
-            created_at: new Date().toISOString(),
-            last_active_at: new Date().toISOString(),
-            wallet_address: publicKey,
-            wallet_type: 'phantom'
-          })
+          .select('id')
+          .eq('wallet_address', publicKey)
+          .maybeSingle()
 
-        if (upsertError) {
-          console.error('Error creating/updating user profile:', upsertError)
+        if (fetchError) {
+          console.error('Error checking for existing user:', fetchError)
+          // Decide how to handle this - maybe proceed or show an error
+        }
+
+        if (!existingUser) {
+          // Get a random animal image from the 1x1 directory
+          const animalImages = [
+            'Dolphine.png', 'Fox.png', 'Tiger.png', 'Chameleon.png', 'Elephant.png',
+            'Zebra.png', 'Crocodile.png', 'Cow.png', 'Seal.png', 'Giraffe.png',
+            'Dog.png', 'Cat.png', 'Jaguar.png', 'Orangutan.png', 'Octopus.png',
+            'Snake.png', 'Monkey.png', 'Squirrel.png', 'Cheetah.png', 'Panda.png',
+            'Koala.png', 'Tasmanian Devil.png', 'Pelican.png', 'Goose.png',
+            'Bald Eagle.png', 'raven.png', 'Penguin.png', 'Flamingo.png',
+            'Lion.png', 'Kangaroo.png', 'Cub.png', 'Parrot.png', 'Turtle.png'
+          ]
+          const randomAnimal = animalImages[Math.floor(Math.random() * animalImages.length)]
+          const animalName = randomAnimal.split('.')[0] // Extract name without extension
+          
+          // Create or update user profile in the users table
+          const { error: upsertError } = await supabase
+            .from('users')
+            .upsert({
+              id: data.user.id,
+              email: `${animalName}@phantom.wallet`,
+              display_name: animalName,
+              profile_image: `/1x1/${randomAnimal}`,
+              anonymous: false,
+              created_at: new Date().toISOString(),
+              last_active_at: new Date().toISOString(),
+              wallet_address: publicKey,
+              wallet_type: 'phantom'
+            })
+
+          if (upsertError) {
+            console.error('Error creating/updating user profile:', upsertError)
+          }
         }
 
         // Redirect to home page after successful Phantom login
