@@ -263,59 +263,7 @@ function formatModelName(modelName: string): string {
 }
 
 // Static fallback models for when Ollama is not available
-const staticOllamaModels: ModelConfig[] = [
-  {
-    id: "llama3.2:latest",
-    name: "Llama 3.2 Latest",
-    provider: "Meta",
-    providerId: "ollama",
-    modelFamily: "Llama 3.2",
-    description: "Latest Llama 3.2 model running locally via Ollama",
-    tags: ["local", "open-source", "fast", "8b"],
-    contextWindow: 128000,
-    inputCost: 0.0,
-    outputCost: 0.0,
-    priceUnit: "free (local)",
-    vision: false,
-    tools: true,
-    audio: false,
-    reasoning: true,
-    openSource: true,
-    speed: "Fast",
-    intelligence: "High",
-    website: "https://ollama.com",
-    apiDocs: "https://github.com/ollama/ollama/blob/main/docs/api.md",
-    modelPage: "https://ollama.com/library/llama3.2",
-    apiSdk: (apiKey?: string) =>
-      openproviders("llama3.2:latest" as string, undefined, apiKey),
-  },
-  {
-    id: "qwen2.5-coder:latest",
-    name: "Qwen 2.5 Coder",
-    provider: "Alibaba",
-    providerId: "ollama",
-    modelFamily: "Qwen 2.5",
-    description:
-      "Specialized coding model based on Qwen 2.5, optimized for programming tasks",
-    tags: ["local", "open-source", "coding", "7b"],
-    contextWindow: 32768,
-    inputCost: 0.0,
-    outputCost: 0.0,
-    priceUnit: "free (local)",
-    vision: false,
-    tools: true,
-    audio: false,
-    reasoning: true,
-    openSource: true,
-    speed: "Fast",
-    intelligence: "High",
-    website: "https://ollama.com",
-    apiDocs: "https://github.com/ollama/ollama/blob/main/docs/api.md",
-    modelPage: "https://ollama.com/library/qwen2.5-coder",
-    apiSdk: (apiKey?: string) =>
-      openproviders("qwen2.5-coder:latest" as string, undefined, apiKey),
-  },
-]
+const staticOllamaModels: ModelConfig[] = []
 
 // Export function to get Ollama models
 export async function getOllamaModels(): Promise<ModelConfig[]> {

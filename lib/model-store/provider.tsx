@@ -50,6 +50,8 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
       const response = await fetchClient("/api/models")
       if (response.ok) {
         const data = await response.json()
+        console.log("Models received from API:", data.models?.length || 0)
+        console.log("Sample models:", data.models?.slice(0, 3).map((m: any) => ({ id: m.id, providerId: m.providerId, accessible: m.accessible })))
         setModels(data.models || [])
       }
     } catch (error) {
@@ -62,6 +64,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
       const response = await fetchClient("/api/user-key-status")
       if (response.ok) {
         const data = await response.json()
+        console.log("User key status:", data)
         setUserKeyStatus(data)
       }
     } catch (error) {

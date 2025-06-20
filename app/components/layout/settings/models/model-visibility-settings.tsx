@@ -5,6 +5,32 @@ import { useModel } from "@/lib/model-store/provider"
 import { PROVIDERS } from "@/lib/providers"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
 import { useState } from "react"
+import { ModelConfig } from "@/lib/models/types"
+
+// Helper function to find the correct provider for display
+function getProviderForDisplay(model: ModelConfig) {
+  // First try to find by model.icon
+  let provider = PROVIDERS.find((p) => p.id === model.icon)
+  
+  // If not found, try to map based on providerId
+  if (!provider) {
+    switch (model.providerId) {
+      case "google":
+        provider = PROVIDERS.find((p) => p.id === "gemini")
+        break
+      case "anthropic":
+        provider = PROVIDERS.find((p) => p.id === "claude")
+        break
+      case "xai":
+        provider = PROVIDERS.find((p) => p.id === "grok")
+        break
+      default:
+        provider = PROVIDERS.find((p) => p.id === model.providerId)
+    }
+  }
+  
+  return provider
+}
 
 export function ModelVisibilitySettings() {
   const { models } = useModel()
@@ -113,7 +139,7 @@ export function ModelVisibilitySettings() {
       <div className="space-y-6 pb-6">
         {Object.entries(modelsByProvider).map(([iconKey, modelsGroup]) => {
           const firstModel = modelsGroup[0]
-          const provider = PROVIDERS.find((p) => p.id === firstModel.icon)
+          const provider = getProviderForDisplay(firstModel)
 
           return (
             <div key={iconKey} className="space-y-3">
@@ -139,9 +165,7 @@ export function ModelVisibilitySettings() {
 
               <div className="space-y-2 pl-7">
                 {modelsGroup.map((model) => {
-                  const modelProvider = PROVIDERS.find(
-                    (p) => p.id === model.provider
-                  )
+                  const modelProvider = getProviderForDisplay(model)
 
                   return (
                     <div

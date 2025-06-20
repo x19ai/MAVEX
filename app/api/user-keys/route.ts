@@ -1,5 +1,6 @@
 import { encryptKey } from "@/lib/encryption"
 import { createClient } from "@/lib/supabase/server"
+import { refreshModelsCache } from "@/lib/models"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -39,6 +40,9 @@ export async function POST(request: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Refresh the models cache to ensure immediate availability
+    refreshModelsCache()
 
     return NextResponse.json({ success: true })
   } catch (error) {

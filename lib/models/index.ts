@@ -23,6 +23,24 @@ const STATIC_MODELS: ModelConfig[] = [
   ...openrouterModels,
 ]
 
+// Debug: Log the models being loaded
+console.log("Static models loaded:", {
+  openai: openaiModels.length,
+  mistral: mistralModels.length,
+  deepseek: deepseekModels.length,
+  claude: claudeModels.length,
+  grok: grokModels.length,
+  perplexity: perplexityModels.length,
+  gemini: geminiModels.length,
+  ollama: ollamaModels.length,
+  openrouter: openrouterModels.length,
+  total: STATIC_MODELS.length
+})
+
+// Debug: Log Google models specifically
+const googleModels = STATIC_MODELS.filter(m => m.providerId === "google")
+console.log("Google models found:", googleModels.map(m => m.id))
+
 // Dynamic models cache with better TTL management
 let dynamicModelsCache: ModelConfig[] | null = null
 let lastFetchTime = 0
@@ -32,16 +50,16 @@ const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes (increased from 5)
 let isInitialized = false
 
 // Function to get all models including dynamically detected ones
-export async function getAllModels(): Promise<ModelConfig[]> {
+export async function getAllModels(forceRefresh = false): Promise<ModelConfig[]> {
   const now = Date.now()
 
-  // Use cache if it's still valid
-  if (dynamicModelsCache && now - lastFetchTime < CACHE_DURATION) {
+  // Use cache if it's still valid and not forcing refresh
+  if (!forceRefresh && dynamicModelsCache && now - lastFetchTime < CACHE_DURATION) {
     return dynamicModelsCache
   }
 
   // If not initialized, return static models immediately and warm cache in background
-  if (!isInitialized) {
+  if (!isInitialized && !forceRefresh) {
     isInitialized = true
     dynamicModelsCache = STATIC_MODELS
     lastFetchTime = now
@@ -91,7 +109,7 @@ async function warmCacheInBackground() {
 }
 
 export async function getModelsWithAccessFlags(): Promise<ModelConfig[]> {
-  const models = await getAllModels()
+  const models = await getAllModels(true) // Force refresh to ensure latest data
 
   const freeModels = models
     .filter(
@@ -116,7 +134,7 @@ export async function getModelsWithAccessFlags(): Promise<ModelConfig[]> {
 export async function getModelsForProvider(
   provider: string
 ): Promise<ModelConfig[]> {
-  const models = STATIC_MODELS
+  const models = await getAllModels(true) // Force refresh to ensure latest data
 
   const providerModels = models
     .filter((model) => model.providerId === provider)
@@ -132,13 +150,24 @@ export async function getModelsForProvider(
 export async function getModelsForUserProviders(
   providers: string[]
 ): Promise<ModelConfig[]> {
-  const providerModels = await Promise.all(
-    providers.map((provider) => getModelsForProvider(provider))
-  )
+  const allModels = await getAllModels(true) // Force refresh to ensure latest data
+  console.log("All models count:", allModels.length)
+  console.log("User providers:", providers)
+  
+  const userModels = allModels
+    .filter((model) => providers.includes(model.providerId))
+    .map((model) => ({
+      ...model,
+      accessible: true,
+    }))
 
-  const flatProviderModels = providerModels.flat()
+  console.log("Filtered models count:", userModels.length)
+  console.log("Models by provider:", userModels.reduce((acc, model) => {
+    acc[model.providerId] = (acc[model.providerId] || 0) + 1
+    return acc
+  }, {} as Record<string, number>))
 
-  return flatProviderModels
+  return userModels
 }
 
 // Synchronous function to get model info for simple lookups

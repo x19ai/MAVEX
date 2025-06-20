@@ -38,12 +38,40 @@ import {
 import { useRef, useState } from "react"
 import { ProModelDialog } from "./pro-dialog"
 import { SubMenu } from "./sub-menu"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 type ModelSelectorProps = {
   selectedModelId: string
   setSelectedModelId: (modelId: string) => void
   className?: string
   isUserAuthenticated?: boolean
+}
+
+// Helper function to find the correct provider for display
+function getProviderForDisplay(model: ModelConfig | undefined) {
+  if (!model) return undefined
+  
+  // First try to find by model.icon
+  let provider = PROVIDERS.find((p) => p.id === model.icon)
+  
+  // If not found, try to map based on providerId
+  if (!provider) {
+    switch (model.providerId) {
+      case "google":
+        provider = PROVIDERS.find((p) => p.id === "gemini")
+        break
+      case "anthropic":
+        provider = PROVIDERS.find((p) => p.id === "claude")
+        break
+      case "xai":
+        provider = PROVIDERS.find((p) => p.id === "grok")
+        break
+      default:
+        provider = PROVIDERS.find((p) => p.id === model.providerId)
+    }
+  }
+  
+  return provider
 }
 
 export function ModelSelector({
@@ -56,9 +84,7 @@ export function ModelSelector({
   const { isModelHidden } = useUserPreferences()
 
   const currentModel = models.find((model) => model.id === selectedModelId)
-  const currentProvider = PROVIDERS.find(
-    (provider) => provider.id === currentModel?.icon
-  )
+  const currentProvider = currentModel ? getProviderForDisplay(currentModel) : undefined
   const isMobile = useBreakpoint(768)
 
   const [hoveredModel, setHoveredModel] = useState<string | null>(null)
@@ -86,6 +112,8 @@ export function ModelSelector({
       .includes(searchQuery.toLowerCase())
     return !isModelHidden(model.id) && matchesSearch
   })
+
+  const hoveredModelData = models.find((model) => model.id === hoveredModel)
 
   const trigger = (
     <Button
@@ -144,9 +172,7 @@ export function ModelSelector({
               ) : filteredModels.length > 0 ? (
                 filteredModels.map((model) => {
                   const isLocked = !model.accessible
-                  const provider = PROVIDERS.find(
-                    (provider) => provider.id === model.icon
-                  )
+                  const provider = getProviderForDisplay(model)
 
                   return (
                     <DropdownMenuItem
@@ -248,7 +274,7 @@ export function ModelSelector({
                 />
               </div>
             </div>
-            <div className="flex h-full flex-col space-y-0 overflow-y-auto px-1 pt-0 pb-0">
+            <div className="flex h-full flex-col space-y-0 overflow-y-auto overflow-x-hidden p-1 pt-0 pb-0">
               {isLoadingModels ? (
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                   <p className="text-muted-foreground mb-2 text-sm">
@@ -258,16 +284,14 @@ export function ModelSelector({
               ) : filteredModels.length > 0 ? (
                 filteredModels.map((model) => {
                   const isLocked = !model.accessible
-                  const provider = PROVIDERS.find(
-                    (provider) => provider.id === model.icon
-                  )
+                  const provider = getProviderForDisplay(model)
 
                   return (
                     <DropdownMenuItem
                       key={model.id}
                       className={cn(
                         "flex w-full items-center justify-between px-3 py-2",
-                        selectedModelId === model.id && "bg-accent"
+                        hoveredModel === model.id && "bg-accent"
                       )}
                       onSelect={() => {
                         if (isLocked) {
@@ -310,6 +334,11 @@ export function ModelSelector({
                 </div>
               )}
             </div>
+            {hoveredModelData && (
+              <div className="absolute left-[305px] top-0">
+                <SubMenu hoveredModelData={hoveredModelData} />
+              </div>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </Tooltip>

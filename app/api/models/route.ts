@@ -54,6 +54,7 @@ export async function GET() {
     }
 
     const userProviders = data?.map((k) => k.provider) || []
+    console.log("User providers:", userProviders)
 
     if (userProviders.length === 0) {
       const models = await getModelsWithAccessFlags()
@@ -66,6 +67,8 @@ export async function GET() {
     }
 
     const models = await getModelsForUserProviders(userProviders)
+    console.log("Models returned for user providers:", models.length)
+    console.log("Sample models:", models.slice(0, 3).map(m => ({ id: m.id, providerId: m.providerId, accessible: m.accessible })))
 
     return new Response(JSON.stringify({ models }), {
       status: 200,

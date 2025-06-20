@@ -141,6 +141,7 @@ export function ByokSection() {
         title: "API key saved",
         description: `Your ${providerConfig?.name} API key has been saved.`,
       })
+      await new Promise(resolve => setTimeout(resolve, 500))
       await Promise.all([refreshUserKeyStatus(), refreshModels()])
       setApiKeys((prev) => ({
         ...prev,
@@ -173,6 +174,7 @@ export function ByokSection() {
         title: "API key deleted",
         description: `Your ${providerConfig?.name} API key has been deleted.`,
       })
+      await new Promise(resolve => setTimeout(resolve, 500))
       await Promise.all([refreshUserKeyStatus(), refreshModels()])
       setApiKeys((prev) => ({ ...prev, [provider]: "" }))
       setDeleteDialogOpen(false)

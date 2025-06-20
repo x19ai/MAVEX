@@ -13,10 +13,33 @@ type SubMenuProps = {
   hoveredModelData: ModelConfig
 }
 
+// Helper function to find the correct provider for display
+function getProviderForDisplay(model: ModelConfig) {
+  // First try to find by model.icon
+  let provider = PROVIDERS.find((p) => p.id === model.icon)
+  
+  // If not found, try to map based on providerId
+  if (!provider) {
+    switch (model.providerId) {
+      case "google":
+        provider = PROVIDERS.find((p) => p.id === "gemini")
+        break
+      case "anthropic":
+        provider = PROVIDERS.find((p) => p.id === "claude")
+        break
+      case "xai":
+        provider = PROVIDERS.find((p) => p.id === "grok")
+        break
+      default:
+        provider = PROVIDERS.find((p) => p.id === model.providerId)
+    }
+  }
+  
+  return provider
+}
+
 export function SubMenu({ hoveredModelData }: SubMenuProps) {
-  const provider = PROVIDERS.find(
-    (provider) => provider.id === hoveredModelData.icon
-  )
+  const provider = getProviderForDisplay(hoveredModelData)
 
   return (
     <div className="bg-popover border-border w-[280px] rounded-md border p-3 shadow-md">
