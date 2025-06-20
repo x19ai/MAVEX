@@ -168,31 +168,22 @@ export function Chat() {
     initialMessages,
     initialInput: draftValue,
     onFinish: async (message) => {
-      if (!message.id) {
-        message.id = uuidv4();
-      }
-      if (!message.createdAt) {
-        message.createdAt = new Date();
-      }
-      console.log("onFinish called with message:", { 
-        role: message.role, 
-        content: message.content.substring(0, 100) + '...',
-        id: message.id,
-        createdAt: message.createdAt
-      })
+      // This callback is for side effects after the `useChat` hook has finished streaming.
+      // The hook itself handles updating the `messages` array for display.
+
+      console.log("Client onFinish: Caching final assistant message.", { id: message.id });
       
-      // Save to local cache
-      await cacheAndAddMessage(message)
+      // 1. Persist the final message to our cache.
+      // `cacheAndAddMessage` has deduplication logic to prevent duplicates.
+      await cacheAndAddMessage(message);
       
-      // Also save to database if it's an assistant message (backup to API route)
-      if (message.role === "assistant" && chatId && userId) {
-        try {
-          const { addMessage } = await import("@/lib/chat-store/messages/api")
-          await addMessage(chatId, message, userId)
-          console.log("Assistant message saved to database from client")
-        } catch (error) {
-          console.error("Failed to save assistant message to database from client:", error)
-        }
+      // 2. Clear the input draft value.
+      clearDraft();
+      
+      // 3. Bump the chat to the top of the list in the sidebar.
+      if (chatId) {
+        // Use a timeout to ensure this happens after the current render cycle.
+        setTimeout(() => bumpChat(chatId), 0);
       }
     },
     onError: handleError,
@@ -365,8 +356,8 @@ export function Chat() {
         hasSentFirstMessageRef.current = true
 
         // Bump chat to top in background (non-blocking)
-        if (messages.length > 0) {
-          setTimeout(() => bumpChat(currentChatId), 0)
+        if (messages.length > 0 && chatId) {
+          setTimeout(() => bumpChat(chatId), 0)
         }
         
         console.log("Submit function completed successfully")

@@ -36,7 +36,12 @@ export function useMessages() {
 
 export function MessagesProvider({ children, initialMessages = [] }: { children: React.ReactNode, initialMessages?: MessageAISDK[] }) {
   const [messages, setMessages] = useState<MessageAISDK[]>(initialMessages)
+  const [isHydrated, setIsHydrated] = useState(false)
   const { chatId } = useChatSession()
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   useEffect(() => {
     if (chatId === null) {
@@ -45,7 +50,7 @@ export function MessagesProvider({ children, initialMessages = [] }: { children:
   }, [chatId])
 
   useEffect(() => {
-    if (!chatId) return
+    if (!chatId || !isHydrated) return
 
     const load = async () => {
       console.log("Loading messages for chat:", chatId)
@@ -84,7 +89,7 @@ export function MessagesProvider({ children, initialMessages = [] }: { children:
     }
 
     load()
-  }, [chatId])
+  }, [chatId, isHydrated])
 
   const refresh = async () => {
     if (!chatId) return
@@ -102,6 +107,13 @@ export function MessagesProvider({ children, initialMessages = [] }: { children:
 
     try {
       setMessages((prev) => {
+        // Deduplicate messages before adding to prevent duplicates in client state
+        const isMessageAlreadyPresent = prev.some((m) => m.id === message.id)
+        if (isMessageAlreadyPresent) {
+          console.log("Message already present in client state, skipping add:", message.id)
+          return prev
+        }
+
         const updated = [...prev, message]
         writeToIndexedDB("messages", { id: chatId, messages: updated })
         return updated

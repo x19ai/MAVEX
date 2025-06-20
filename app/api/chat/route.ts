@@ -164,20 +164,33 @@ export async function POST(req: Request) {
           console.log("API onFinish called with response:", {
             chatId,
             messageCount: response.messages.length,
-            messages: response.messages.map(m => ({ 
-              role: m.role, 
+            messages: response.messages.map(m => ({
+              role: m.role,
               content: typeof m.content === 'string' ? m.content.substring(0, 50) : 'complex content'
             }))
           })
           if (supabase) {
             try {
-              await storeAssistantMessage({
-                supabase,
-                chatId,
-                userId,
-                messages: response.messages as unknown as import("@/app/types/api.types").Message[],
-              })
-              console.log("Assistant message saved successfully in API route (forced save)")
+              // Ensure only the very last assistant message is saved
+              const lastAssistantMessage = response.messages.findLast(
+                (m) => m.role === "assistant"
+              )
+
+              if (lastAssistantMessage) {
+                console.log("Attempting to save assistant message:", { id: lastAssistantMessage.id, content: typeof lastAssistantMessage.content === 'string' ? lastAssistantMessage.content.substring(0, 50) : 'complex content' })
+                console.trace("Call stack for saving assistant message")
+                await storeAssistantMessage({
+                  supabase,
+                  chatId,
+                  userId,
+                  // Pass only the last assistant message in an array
+                  messages: [lastAssistantMessage] as unknown as import("@/app/types/api.types").Message[],
+                })
+                console.log("Assistant message saved successfully in API route (forced save)")
+              } else {
+                console.log("No new assistant message found to save in API route.")
+              }
+
             } catch (error) {
               console.error("Failed to save assistant message in API route:", error)
             }
