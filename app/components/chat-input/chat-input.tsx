@@ -15,7 +15,6 @@ import { PromptSystem } from "../suggestions/prompt-system"
 import { ButtonFileUpload } from "./button-file-upload"
 import { ButtonSearch } from "./button-search"
 import { FileList } from "./file-list"
-import { SelectedAgent } from "./selected-agent"
 import { APP_NAME } from "@/lib/config"
 import { v4 as uuidv4 } from 'uuid'
 
