@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 
 export function HeaderTwitterButton() {
   const handleTwitterClick = () => {
-    window.open("https://twitter.com/M4V3X", "_blank")
+    window.open("https://x.com/MavexDotFun", "_blank")
   }
 
   return (

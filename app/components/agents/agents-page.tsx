@@ -26,7 +26,12 @@ export function AgentsPage({
   const randomAgents = useMemo(() => {
     return safeCuratedAgents
       .filter((agent) => agent.id !== openAgentId)
-      .sort(() => Math.random() - 0.5)
+      .sort((a, b) => {
+        // Use a deterministic hash of the agent ID for consistent sorting
+        const hashA = a.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        const hashB = b.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        return hashA - hashB
+      })
       .slice(0, 4)
   }, [safeCuratedAgents, openAgentId])
 
