@@ -11,6 +11,7 @@ type UserPreferences = {
   showToolInvocations: boolean
   showConversationPreviews: boolean
   hiddenModels: string[] // Array of model IDs that should be hidden
+  showPerformanceDashboard: boolean // Show performance monitoring dashboard
 }
 
 const defaultPreferences: UserPreferences = {
@@ -19,6 +20,7 @@ const defaultPreferences: UserPreferences = {
   showToolInvocations: true,
   showConversationPreviews: true,
   hiddenModels: [],
+  showPerformanceDashboard: false, // Default to false
 }
 
 const PREFERENCES_STORAGE_KEY = "user-preferences"
@@ -30,6 +32,7 @@ interface UserPreferencesContextType {
   setPromptSuggestions: (enabled: boolean) => void
   setShowToolInvocations: (enabled: boolean) => void
   setShowConversationPreviews: (enabled: boolean) => void
+  setShowPerformanceDashboard: (enabled: boolean) => void
   toggleModelVisibility: (modelId: string) => void
   isModelHidden: (modelId: string) => boolean
 }
@@ -113,6 +116,10 @@ export function UserPreferencesProvider({
     updatePreferences({ showConversationPreviews: enabled })
   }
 
+  const setShowPerformanceDashboard = (enabled: boolean) => {
+    updatePreferences({ showPerformanceDashboard: enabled })
+  }
+
   const toggleModelVisibility = (modelId: string) => {
     const currentHidden = preferences.hiddenModels || []
     const isHidden = currentHidden.includes(modelId)
@@ -135,6 +142,7 @@ export function UserPreferencesProvider({
         setPromptSuggestions,
         setShowToolInvocations,
         setShowConversationPreviews,
+        setShowPerformanceDashboard,
         toggleModelVisibility,
         isModelHidden,
       }}

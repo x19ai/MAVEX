@@ -23,18 +23,32 @@ const STATIC_MODELS: ModelConfig[] = [
   ...openrouterModels,
 ]
 
-// Dynamic models cache
+// Dynamic models cache with better TTL management
 let dynamicModelsCache: ModelConfig[] | null = null
 let lastFetchTime = 0
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const CACHE_DURATION = 10 * 60 * 1000 // 10 minutes (increased from 5)
 
-// // Function to get all models including dynamically detected ones
+// Pre-warm the cache with static models
+let isInitialized = false
+
+// Function to get all models including dynamically detected ones
 export async function getAllModels(): Promise<ModelConfig[]> {
   const now = Date.now()
 
   // Use cache if it's still valid
   if (dynamicModelsCache && now - lastFetchTime < CACHE_DURATION) {
     return dynamicModelsCache
+  }
+
+  // If not initialized, return static models immediately and warm cache in background
+  if (!isInitialized) {
+    isInitialized = true
+    dynamicModelsCache = STATIC_MODELS
+    lastFetchTime = now
+    
+    // Warm cache in background
+    warmCacheInBackground()
+    return STATIC_MODELS
   }
 
   try {
@@ -52,7 +66,27 @@ export async function getAllModels(): Promise<ModelConfig[]> {
     return dynamicModelsCache
   } catch (error) {
     console.warn("Failed to load dynamic models, using static models:", error)
-    return STATIC_MODELS
+    // Keep the static models in cache even if dynamic loading fails
+    if (!dynamicModelsCache) {
+      dynamicModelsCache = STATIC_MODELS
+      lastFetchTime = now
+    }
+    return dynamicModelsCache
+  }
+}
+
+// Background cache warming function
+async function warmCacheInBackground() {
+  try {
+    const detectedOllamaModels = await getOllamaModels()
+    const staticModelsWithoutOllama = STATIC_MODELS.filter(
+      (model) => model.providerId !== "ollama"
+    )
+    
+    dynamicModelsCache = [...staticModelsWithoutOllama, ...detectedOllamaModels]
+    lastFetchTime = Date.now()
+  } catch (error) {
+    console.warn("Background cache warming failed:", error)
   }
 }
 
@@ -126,4 +160,5 @@ export const MODELS: ModelConfig[] = STATIC_MODELS
 export function refreshModelsCache(): void {
   dynamicModelsCache = null
   lastFetchTime = 0
+  isInitialized = false
 }

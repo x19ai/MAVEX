@@ -16,6 +16,7 @@ import { useState } from "react"
 import { ByokSection } from "./apikeys/byok-section"
 import { InteractionPreferences } from "./appearance/interaction-preferences"
 import { LayoutSettings } from "./appearance/layout-settings"
+import { PerformanceMonitoring } from "./appearance/performance-monitoring"
 import { ThemeSelection } from "./appearance/theme-selection"
 import { ConnectionsPlaceholder } from "./connections/connections-placeholder"
 import { DeveloperTools } from "./connections/developer-tools"
@@ -116,6 +117,7 @@ export function SettingsContent({
               <ThemeSelection />
               <LayoutSettings />
               <InteractionPreferences />
+              <PerformanceMonitoring />
             </TabsContent>
 
             <TabsContent value="apikeys" className="px-6">
@@ -199,6 +201,7 @@ export function SettingsContent({
                 <ThemeSelection />
                 <LayoutSettings />
                 <InteractionPreferences />
+                <PerformanceMonitoring />
               </TabsContent>
 
               <TabsContent value="apikeys" className="mt-0 space-y-6">
