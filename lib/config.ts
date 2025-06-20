@@ -12,7 +12,6 @@ export const NON_AUTH_DAILY_MESSAGE_LIMIT = 5
 export const AUTH_DAILY_MESSAGE_LIMIT = 1000
 export const REMAINING_QUERY_ALERT_THRESHOLD = 2
 export const DAILY_FILE_UPLOAD_LIMIT = 5
-export const DAILY_SPECIAL_AGENT_LIMIT = 5
 export const DAILY_LIMIT_PRO_MODELS = 500
 
 export const FREE_MODELS_IDS = [
@@ -126,7 +125,7 @@ export const CURATED_AGENTS_SLUGS = [
 
 // MAVEX Token Configuration
 export const MAVEX_CONFIG = {
-  ADDRESS: "CA",
+  ADDRESS: "So11111111111111111111111111111111111111112",
   TOKEN_SYMBOL: "$MAVEX",
   TOKEN_NAME: "Mavex Token",
   NETWORK: "mainnet-beta",

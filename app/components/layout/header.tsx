@@ -5,9 +5,7 @@ import { AppInfoTrigger } from "@/app/components/layout/app-info/app-info-trigge
 import { ButtonNewChat } from "@/app/components/layout/button-new-chat"
 import { UserMenu } from "@/app/components/layout/user-menu"
 import { useBreakpoint } from "@/app/hooks/use-breakpoint"
-import type { Agent } from "@/app/types/agent"
 import { Button } from "@/components/ui/button"
-import { useAgent } from "@/lib/agent-store/provider"
 import { APP_NAME } from "@/lib/config"
 import { useUser } from "@/lib/user-store/provider"
 import { Info } from "@phosphor-icons/react"
@@ -19,15 +17,9 @@ import { HeaderTwitterButton } from "./header-twitter-button"
 import { ContractAddress } from "./contract-address"
 import { SettingsTrigger } from "./settings/settings-trigger"
 
-export type AgentHeader = Pick<
-  Agent,
-  "name" | "description" | "avatar_url" | "slug"
->
-
 export function Header({ hasSidebar }: { hasSidebar: boolean }) {
   const isMobile = useBreakpoint(768)
   const { user } = useUser()
-  const { currentAgent } = useAgent()
 
   const isLoggedIn = !!user
 
@@ -83,7 +75,6 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
               </>
             ) : (
               <>
-                {currentAgent && <DialogPublish />}
                 <ButtonNewChat />
                 {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
                 <SettingsTrigger />

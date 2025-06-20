@@ -28,8 +28,8 @@ export function AgentsPage({
       .filter((agent) => agent.id !== openAgentId)
       .sort((a, b) => {
         // Use a deterministic hash of the agent ID for consistent sorting
-        const hashA = a.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-        const hashB = b.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        const hashA = a.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
+        const hashB = b.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)
         return hashA - hashB
       })
       .slice(0, 4)

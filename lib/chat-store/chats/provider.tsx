@@ -9,7 +9,6 @@ import {
   deleteChat as deleteChatFromDb,
   fetchAndCacheChats,
   getCachedChats,
-  updateChatAgent as updateChatAgentFromDb,
   updateChatModel as updateChatModelFromDb,
   updateChatTitle,
 } from "./api"
@@ -31,17 +30,11 @@ interface ChatsContextType {
     model?: string,
     isAuthenticated?: boolean,
     systemPrompt?: string,
-    agentId?: string
+    projectId?: string
   ) => Promise<Chats | undefined>
   resetChats: () => Promise<void>
   getChatById: (id: string) => Chats | undefined
   updateChatModel: (id: string, model: string) => Promise<void>
-  updateChatAgent: (
-    userId: string,
-    chatId: string,
-    agentId: string | null,
-    isAuthenticated: boolean
-  ) => Promise<void>
   bumpChat: (id: string) => Promise<void>
 }
 const ChatsContext = createContext<ChatsContextType | null>(null)
@@ -129,7 +122,7 @@ export function ChatsProvider({
     model?: string,
     isAuthenticated?: boolean,
     systemPrompt?: string,
-    agentId?: string
+    projectId?: string
   ) => {
     if (!userId) return
     const prev = [...chats]
@@ -137,14 +130,14 @@ export function ChatsProvider({
     const optimisticId = `optimistic-${++optimisticIdCounter.current}`
     const optimisticChat = {
       id: optimisticId,
-      title: title || (agentId ? `Conversation with agent` : "New Chat"),
+      title: title || "New Chat",
       created_at: new Date().toISOString(),
       model: model || MODEL_DEFAULT,
       system_prompt: systemPrompt || SYSTEM_PROMPT_DEFAULT,
-      agent_id: agentId || null,
       user_id: userId,
       public: true,
       updated_at: new Date().toISOString(),
+      project_id: null,
     }
     setChats((prev) => [optimisticChat, ...prev])
 
@@ -154,7 +147,7 @@ export function ChatsProvider({
         title,
         model,
         isAuthenticated,
-        agentId
+        projectId
       )
 
       setChats((prev) => [
@@ -189,15 +182,6 @@ export function ChatsProvider({
     }
   }
 
-  const updateChatAgent = async (
-    userId: string,
-    chatId: string,
-    agentId: string | null,
-    isAuthenticated: boolean
-  ) => {
-    await updateChatAgentFromDb(userId, chatId, agentId, isAuthenticated)
-  }
-
   const bumpChat = async (id: string) => {
     const prev = [...chats]
     const updatedChatWithNewUpdatedAt = prev.map((c) =>
@@ -221,7 +205,6 @@ export function ChatsProvider({
         resetChats,
         getChatById,
         updateChatModel,
-        updateChatAgent,
         bumpChat,
         isLoading,
       }}

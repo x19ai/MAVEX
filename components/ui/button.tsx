@@ -44,12 +44,13 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
-
+  const { disabled, ...rest } = props
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
+      {...rest}
+      {...(typeof disabled !== 'undefined' ? { disabled: !!disabled } : {})}
     />
   )
 }

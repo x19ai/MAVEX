@@ -1,22 +1,23 @@
-import type { Tables } from "./database.types"
+export type Agent = {
+  id: string
+  slug: string
+  name: string
+  description?: string
+  avatar_url?: string
+  example_inputs?: string[]
+  system_prompt?: string
+  tools?: any[]
+  mcp_config?: any
+}
 
-export type Agent = Tables<"agents">
-
-export type AgentSummary = Pick<
-  Tables<"agents">,
-  | "id"
-  | "name"
-  | "description"
-  | "avatar_url"
-  | "example_inputs"
-  | "creator_id"
-  | "slug"
-  | "system_prompt"
-  | "tools"
-  | "mcp_config"
->
-
-export type AgentsSuggestions = Pick<
-  Tables<"agents">,
-  "id" | "name" | "description" | "avatar_url" | "slug"
->
+export type AgentSummary = {
+  id: string
+  slug: string
+  name: string
+  description?: string
+  avatar_url?: string
+  example_inputs?: string[]
+  system_prompt?: string
+  tools?: any[]
+  mcp_config?: any
+} 
