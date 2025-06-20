@@ -2,15 +2,9 @@
 
 import { Switch } from "@/components/ui/switch"
 import { useUserPreferences } from "@/lib/user-preference-store/provider"
-import { isDev } from "@/lib/utils"
 
 export function PerformanceMonitoring() {
   const { preferences, setShowPerformanceDashboard } = useUserPreferences()
-
-  // Only show this setting in development mode
-  if (!isDev) {
-    return null
-  }
 
   return (
     <div>
