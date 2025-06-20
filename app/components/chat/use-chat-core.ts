@@ -122,100 +122,95 @@ export function useChatCore({
 
   // Submit action
   const submit = useCallback(async () => {
-    await measureAsync("send-message", async () => {
-      setIsSubmitting(true)
+    setIsSubmitting(true)
 
-      const uid = await getOrCreateGuestUserId(user)
-      if (!uid) {
-        setIsSubmitting(false)
+    const uid = await getOrCreateGuestUserId(user)
+    if (!uid) {
+      setIsSubmitting(false)
+      return
+    }
+
+    const optimisticId = `optimistic-${uuidv4()}`
+    const optimisticAttachments =
+      files.length > 0 ? createOptimisticAttachments(files) : []
+
+    const optimisticMessage = {
+      id: optimisticId,
+      content: input,
+      role: "user" as const,
+      createdAt: new Date(),
+      experimental_attachments:
+        optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
+    }
+
+    setMessages((prev) => [...prev, optimisticMessage])
+    setInput("")
+
+    const submittedFiles = [...files]
+    setFiles([])
+
+    // Prepare API call logic
+    const apiCall = async () => {
+      const allowed = await checkLimitsAndNotify(uid)
+      if (!allowed) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId))
+        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
         return
       }
 
-      const optimisticId = `optimistic-${uuidv4()}`
-      const optimisticAttachments =
-        files.length > 0 ? createOptimisticAttachments(files) : []
-
-      const optimisticMessage = {
-        id: optimisticId,
-        content: input,
-        role: "user" as const,
-        createdAt: new Date(),
-        experimental_attachments:
-          optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
+      const currentChatId = await ensureChatExists(uid)
+      if (!currentChatId) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        return
       }
 
-      setMessages((prev) => [...prev, optimisticMessage])
-      setInput("")
+      if (input.length > MESSAGE_MAX_LENGTH) {
+        toast({
+          title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
+          status: "error",
+        })
+        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        return
+      }
 
-      const submittedFiles = [...files]
-      setFiles([])
-
-      try {
-        const allowed = await checkLimitsAndNotify(uid)
-        if (!allowed) {
+      let attachments: Attachment[] | null = []
+      if (submittedFiles.length > 0) {
+        attachments = await handleFileUploads(uid, currentChatId)
+        if (attachments === null) {
           setMessages((prev) => prev.filter((m) => m.id !== optimisticId))
-          cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+          cleanupOptimisticAttachments(
+            optimisticMessage.experimental_attachments
+          )
           return
         }
-
-        const currentChatId = await ensureChatExists(uid)
-        if (!currentChatId) {
-          setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
-          cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
-          return
-        }
-
-        if (input.length > MESSAGE_MAX_LENGTH) {
-          toast({
-            title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
-            status: "error",
-          })
-          setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
-          cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
-          return
-        }
-
-        let attachments: Attachment[] | null = []
-        if (submittedFiles.length > 0) {
-          attachments = await handleFileUploads(uid, currentChatId)
-          if (attachments === null) {
-            setMessages((prev) => prev.filter((m) => m.id !== optimisticId))
-            cleanupOptimisticAttachments(
-              optimisticMessage.experimental_attachments
-            )
-            return
-          }
-        }
-
-        const options = {
-          body: {
-            chatId: currentChatId,
-            userId: uid,
-            model: selectedModel,
-            isAuthenticated,
-            systemPrompt: systemPrompt || SYSTEM_PROMPT_DEFAULT,
-            enableSearch,
-          },
-          experimental_attachments: attachments || undefined,
-        }
-
-        handleSubmit(undefined, options)
-        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
-        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
-        cacheAndAddMessage(optimisticMessage)
-        clearDraft()
-
-        if (messages.length > 0) {
-          bumpChat(currentChatId)
-        }
-      } catch (submitError) {
-        setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
-        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
-        toast({ title: "Failed to send message", status: "error" })
-      } finally {
-        setIsSubmitting(false)
       }
-    })
+
+      const options = {
+        body: {
+          chatId: currentChatId,
+          userId: uid,
+          model: selectedModel,
+          isAuthenticated,
+          systemPrompt: systemPrompt || SYSTEM_PROMPT_DEFAULT,
+          enableSearch,
+        },
+        experimental_attachments: attachments || undefined,
+      }
+
+      handleSubmit(undefined, options)
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+      cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+      cacheAndAddMessage(optimisticMessage)
+      clearDraft()
+
+      if (messages.length > 0) {
+        bumpChat(currentChatId)
+      }
+    }
+
+    await measureAsync("send-message-api", apiCall)
   }, [
     user,
     files,
