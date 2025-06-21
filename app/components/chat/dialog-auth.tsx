@@ -86,7 +86,7 @@ export function DialogAuth({ open, setOpen }: DialogAuthProps) {
       console.log('Signing in with Supabase...')
       const { data, error } = await supabase.auth.signInWithWeb3({
         chain: 'solana',
-        statement: `Authenticate your Phantom wallet with MAVEX. This won't trigger a blockchain transaction.`,
+        statement: `This won't trigger a blockchain transaction`,
         wallet: window.phantom?.solana || window.solana?.phantom as any // Type assertion needed due to interface mismatch
       })
 
