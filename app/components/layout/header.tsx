@@ -76,6 +76,7 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             ) : (
               <>
                 <ButtonNewChat />
+                <DialogPublish />
                 {!hasSidebar && <HistoryTrigger hasSidebar={hasSidebar} />}
                 <SettingsTrigger />
                 <UserMenu />

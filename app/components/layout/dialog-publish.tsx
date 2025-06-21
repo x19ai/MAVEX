@@ -39,11 +39,20 @@ export function DialogPublish() {
   const isMobile = useBreakpoint(768)
   const [copied, setCopied] = useState(false)
 
+  // Debug logging
+  console.log("DialogPublish debug:", {
+    isSupabaseEnabled,
+    chatId,
+    hasSupabase: !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  })
+
   if (!isSupabaseEnabled) {
+    console.log("DialogPublish: Supabase not enabled")
     return null
   }
 
   if (!chatId) {
+    console.log("DialogPublish: No chatId")
     return null
   }
 
