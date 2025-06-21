@@ -39,20 +39,11 @@ export function DialogPublish() {
   const isMobile = useBreakpoint(768)
   const [copied, setCopied] = useState(false)
 
-  // Debug logging
-  console.log("DialogPublish debug:", {
-    isSupabaseEnabled,
-    chatId,
-    hasSupabase: !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  })
-
   if (!isSupabaseEnabled) {
-    console.log("DialogPublish: Supabase not enabled")
     return null
   }
 
   if (!chatId) {
-    console.log("DialogPublish: No chatId")
     return null
   }
 
@@ -72,28 +63,46 @@ export function DialogPublish() {
   }
 
   const handlePublish = async () => {
-    setIsLoading(true)
+    try {
+      setIsLoading(true)
 
-    const supabase = createClient()
+      const supabase = createClient()
 
-    if (!supabase) {
-      throw new Error("Supabase is not configured")
-    }
+      if (!supabase) {
+        throw new Error("Supabase is not configured")
+      }
 
-    const { data, error } = await supabase
-      .from("chats")
-      .update({ public: true })
-      .eq("id", chatId)
-      .select()
-      .single()
+      // Check if user is authenticated
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser()
 
-    if (error) {
-      console.error(error)
-    }
+      if (authError || !user) {
+        throw new Error("User not authenticated")
+      }
 
-    if (data) {
+      const { data, error } = await supabase
+        .from("chats")
+        .update({ public: true })
+        .eq("id", chatId)
+        .eq("user_id", user.id) // Ensure user owns the chat
+        .select()
+        .single()
+
+      if (error) {
+        console.error("Publish error:", error)
+        throw error
+      }
+
+      if (data) {
+        setOpenDialog(true)
+      }
+    } catch (error) {
+      console.error("Failed to publish chat:", error)
+      // You might want to show a toast notification here
+    } finally {
       setIsLoading(false)
-      setOpenDialog(true)
     }
   }
 
