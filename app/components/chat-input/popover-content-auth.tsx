@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { PopoverContent } from "@/components/ui/popover"
 import Image from "next/image"
 import React, { useState } from "react"
-import { signInWithGoogle } from "../../../lib/api"
+// import { signInWithGoogle } from "../../../lib/api"
 import { APP_NAME } from "../../../lib/config"
 import { createClient } from "../../../lib/supabase/client"
 import { isSupabaseEnabled } from "../../../lib/supabase/config"
@@ -17,33 +17,34 @@ export function PopoverContentAuth() {
     return null
   }
 
-  const handleSignInWithGoogle = async () => {
-    const supabase = createClient()
+  // const handleSignInWithGoogle = async () => {
+  //   const supabase = createClient()
 
-    if (!supabase) {
-      throw new Error("Supabase is not configured")
-    }
+  //   if (!supabase) {
+  //     throw new Error("Supabase is not configured")
+  //   }
 
-    try {
-      setIsLoading(true)
-      setError(null)
+  //   try {
+  //     setIsLoading(true)
+  //     setError(null)
 
-      const data = await signInWithGoogle(supabase)
+  //     const data = await signInWithGoogle(supabase)
 
-      // Redirect to the provider URL
-      if (data?.url) {
-        window.location.href = data.url
-      }
-    } catch (err: unknown) {
-      console.error("Error signing in with Google:", err)
-      setError(
-        (err as Error).message ||
-          "An unexpected error occurred. Please try again."
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  //     // Redirect to the provider URL
+  //     if (data?.url) {
+  //       window.location.href = data.url
+  //     }
+  //   } catch (err: unknown) {
+  //     console.error("Error signing in with Google:", err)
+  //     setError(
+  //       (err as Error).message ||
+  //         "An unexpected error occurred. Please try again."
+  //     )
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
   return (
     <PopoverContent
       className="w-[300px] overflow-hidden rounded-xl p-0"
@@ -69,7 +70,7 @@ export function PopoverContentAuth() {
         <p className="text-muted-foreground mb-5 text-base">
           Add files, use more models, BYOK, and more.
         </p>
-        <Button
+        {/* <Button
           variant="secondary"
           className="w-full text-base"
           size="lg"
@@ -84,7 +85,7 @@ export function PopoverContentAuth() {
             className="mr-2 size-4"
           />
           <span>{isLoading ? "Connecting..." : "Continue with Google"}</span>
-        </Button>
+        </Button> */}
       </div>
     </PopoverContent>
   )

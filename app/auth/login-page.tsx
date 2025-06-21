@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { signInWithGoogle } from "@/lib/api"
+// import { signInWithGoogle } from "@/lib/api"
 import { createClient } from "@/lib/supabase/client"
 import { APP_NAME } from "@/lib/config"
 
@@ -38,36 +38,36 @@ export default function LoginPage() {
     return () => clearTimeout(timeoutId)
   }, [])
 
-  async function handleSignInWithGoogle() {
-    const supabase = createClient()
+  // async function handleSignInWithGoogle() {
+  //   const supabase = createClient()
 
-    if (!supabase) {
-      throw new Error("Supabase is not configured")
-    }
+  //   if (!supabase) {
+  //     throw new Error("Supabase is not configured")
+  //   }
 
-    try {
-      setIsLoading(true)
-      setError(null)
+  //   try {
+  //     setIsLoading(true)
+  //     setError(null)
 
-      const data = await signInWithGoogle(supabase)
+  //     const data = await signInWithGoogle(supabase)
 
-      // Redirect to the provider URL
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        // Fallback to home if no redirect URL (though should not happen with OAuth)
-        window.location.href = '/'
-      }
-    } catch (err: unknown) {
-      console.error("Error signing in with Google:", err)
-      setError(
-        (err as Error).message ||
-          "An unexpected error occurred. Please try again."
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  //     // Redirect to the provider URL
+  //     if (data?.url) {
+  //       window.location.href = data.url
+  //     } else {
+  //       // Fallback to home if no redirect URL (though should not happen with OAuth)
+  //       window.location.href = '/'
+  //     }
+  //   } catch (err: unknown) {
+  //     console.error("Error signing in with Google:", err)
+  //     setError(
+  //       (err as Error).message ||
+  //         "An unexpected error occurred. Please try again."
+  //     )
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
 
   async function handleSignInWithPhantom() {
     const supabase = createClient()
@@ -186,7 +186,7 @@ export default function LoginPage() {
             </div>
           )}
           <div className="mt-8 space-y-4">
-            <Button
+            {/* <Button
               variant="secondary"
               className="w-full text-base sm:text-base"
               size="lg"
@@ -203,7 +203,7 @@ export default function LoginPage() {
               <span>
                 {isLoading ? "Connecting..." : "Continue with Google"}
               </span>
-            </Button>
+            </Button> */}
 
             <Button
               variant="secondary"
