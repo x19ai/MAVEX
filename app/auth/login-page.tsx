@@ -213,7 +213,7 @@ export default function LoginPage() {
               disabled={isLoading}
             >
               <Image
-                src="/Phantom_SVG_Icon.svg"
+                src="/Phantom-Icon_App.svg"
                 alt="Phantom logo"
                 width={20}
                 height={20}

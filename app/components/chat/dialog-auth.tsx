@@ -178,7 +178,7 @@ export function DialogAuth({ open, setOpen }: DialogAuthProps) {
             disabled={isLoading || !isPhantomAvailable}
           >
             <Image
-              src="/Phantom_SVG_Icon.svg"
+              src="/Phantom-Icon_App.svg"
               alt="Phantom logo"
               width={20}
               height={20}

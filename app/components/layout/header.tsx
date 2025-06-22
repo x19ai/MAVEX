@@ -68,8 +68,15 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
                 />
                 <Link
                   href="/auth"
-                  className="font-base text-muted-foreground hover:text-foreground text-base transition-colors"
+                  className="inline-flex items-center gap-2 rounded-md bg-[#AB9FF2] px-4 py-2 text-sm font-medium text-[#FFFDF8] transition-colors hover:bg-[#9B8FE2]"
                 >
+                  <Image
+                    src="/Phantom-Icon_Transparent_White.svg"
+                    alt="Phantom logo"
+                    width={16}
+                    height={16}
+                    className="size-4"
+                  />
                   Login
                 </Link>
               </>
