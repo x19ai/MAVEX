@@ -2,7 +2,6 @@ import {
   ChatContainerContent,
   ChatContainerRoot,
 } from "@/components/prompt-kit/chat-container"
-import { Loader } from "@/components/prompt-kit/loader"
 import { ScrollButton } from "@/components/prompt-kit/scroll-button"
 import { Message as MessageType } from "@ai-sdk/react"
 import { useRef } from "react"
@@ -60,7 +59,6 @@ export function Conversation({
         ))}
         <ScrollButton />
       </ChatContainerContent>
-      {status === "streaming" && <Loader />}
     </ChatContainerRoot>
   )
 }

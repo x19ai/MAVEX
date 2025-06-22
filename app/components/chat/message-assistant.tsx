@@ -13,6 +13,7 @@ import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
 import { ToolInvocation } from "./tool-invocation"
+import { Loader } from "@/components/prompt-kit/loader"
 
 type MessageAssistantProps = {
   children: string
@@ -86,7 +87,11 @@ export function MessageAssistant({
           <SearchImages results={searchImageResults} />
         )}
 
-        {contentNullOrEmpty ? null : (
+        {contentNullOrEmpty ? (
+          <div className="flex items-center py-4">
+            <Loader />
+          </div>
+        ) : (
           <MessageContent
             className={cn(
               "prose dark:prose-invert relative min-w-full bg-transparent p-0",

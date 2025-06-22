@@ -111,14 +111,16 @@ export function useChatCore({
   }, [prompt, setInput])
 
   // Reset messages when navigating from a chat to home
-  if (
-    prevChatIdRef.current !== null &&
-    chatId === null &&
-    messages.length > 0
-  ) {
-    setMessages([])
-  }
-  prevChatIdRef.current = chatId
+  useEffect(() => {
+    if (
+      prevChatIdRef.current !== null &&
+      chatId === null &&
+      messages.length > 0
+    ) {
+      setMessages([])
+    }
+    prevChatIdRef.current = chatId
+  }, [chatId, messages.length, setMessages])
 
   // Submit action
   const submit = useCallback(async () => {
@@ -136,12 +138,13 @@ export function useChatCore({
         return
       }
 
-      const optimisticId = `optimistic-${uuidv4()}`
+      const optimisticUserId = `optimistic-user-${uuidv4()}`
+      const optimisticAssistantId = `optimistic-assistant-${uuidv4()}`
       const optimisticAttachments =
         files.length > 0 ? createOptimisticAttachments(files) : []
 
-      const optimisticMessage: Message = {
-        id: optimisticId,
+      const optimisticUserMessage: Message = {
+        id: optimisticUserId,
         content: messageContent,
         role: "user" as const,
         createdAt: new Date(),
@@ -149,7 +152,14 @@ export function useChatCore({
           optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
       }
 
-      setMessages(prev => [...prev, optimisticMessage])
+      const optimisticAssistantMessage: Message = {
+        id: optimisticAssistantId,
+        content: "", // Empty content so the loading animation shows
+        role: "assistant" as const,
+        createdAt: new Date(),
+      }
+
+      setMessages(prev => [...prev, optimisticUserMessage, optimisticAssistantMessage])
       setInput("")
 
       const submittedFiles = [...files]
@@ -157,15 +167,15 @@ export function useChatCore({
 
       const allowed = await checkLimitsAndNotify(uid)
       if (!allowed) {
-        setMessages(prev => prev.filter(m => m.id !== optimisticId))
-        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
+        cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
 
       const currentChatId = await ensureChatExists(uid, messages)
       if (!currentChatId) {
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticId))
-        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
+        cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
 
@@ -174,8 +184,8 @@ export function useChatCore({
           title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
           status: "error",
         })
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticId))
-        cleanupOptimisticAttachments(optimisticMessage.experimental_attachments)
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
+        cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
 
@@ -183,9 +193,9 @@ export function useChatCore({
       if (submittedFiles.length > 0) {
         attachments = await handleFileUploads(uid, currentChatId)
         if (attachments === null) {
-          setMessages(prev => prev.filter(m => m.id !== optimisticId))
+          setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
           cleanupOptimisticAttachments(
-            optimisticMessage.experimental_attachments
+            optimisticUserMessage.experimental_attachments
           )
           return
         }
@@ -204,16 +214,17 @@ export function useChatCore({
       }
       
       const messageToSend: Message = {
-        id: optimisticId,
+        id: optimisticUserId,
         role: 'user',
         content: messageContent,
-        createdAt: optimisticMessage.createdAt,
-        experimental_attachments: optimisticMessage.experimental_attachments
+        createdAt: optimisticUserMessage.createdAt,
+        experimental_attachments: optimisticUserMessage.experimental_attachments
       }
       
       append(messageToSend, options)
       
-      setMessages(prev => prev.filter(m => m.id !== optimisticId))
+      // Optimistic messages will be replaced by real messages when they come in
+      // No need to remove them immediately as the onFinish callback will handle this
       
       if (messages.length > 0) {
         bumpChat(currentChatId)
