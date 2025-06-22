@@ -3,8 +3,9 @@
 import { PromptSuggestion } from "@/components/prompt-kit/prompt-suggestion"
 import { TRANSITION_SUGGESTIONS } from "@/lib/motion"
 import { AnimatePresence, motion } from "motion/react"
-import React, { memo, useCallback, useMemo, useState } from "react"
+import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from "react"
 import { SUGGESTIONS as SUGGESTIONS_CONFIG } from "../../../lib/config"
+import useClickOutside from "@/app/hooks/use-click-outside"
 
 type SuggestionsProps = {
   onValueChange: (value: string) => void
@@ -20,10 +21,32 @@ export const Suggestions = memo(function Suggestions({
   value,
 }: SuggestionsProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
 
   if (!value && activeCategory !== null) {
     setActiveCategory(null)
   }
+
+  // Handle clicking outside to close suggestions
+  useClickOutside(suggestionsRef, () => {
+    if (activeCategory !== null) {
+      setActiveCategory(null)
+      onValueChange("")
+    }
+  })
+
+  // Handle escape key to close suggestions
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && activeCategory !== null) {
+        setActiveCategory(null)
+        onValueChange("")
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [activeCategory, onValueChange])
 
   const activeCategoryData = SUGGESTIONS_CONFIG.find(
     (group) => group.label === activeCategory
@@ -140,8 +163,10 @@ export const Suggestions = memo(function Suggestions({
   )
 
   return (
-    <AnimatePresence mode="wait">
-      {showCategorySuggestions ? suggestionsList : suggestionsGrid}
-    </AnimatePresence>
+    <div ref={suggestionsRef}>
+      <AnimatePresence mode="wait">
+        {showCategorySuggestions ? suggestionsList : suggestionsGrid}
+      </AnimatePresence>
+    </div>
   )
 })
