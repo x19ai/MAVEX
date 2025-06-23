@@ -40,23 +40,35 @@ export function Conversation({
   return (
     <ChatContainerRoot className="relative w-full">
       <ChatContainerContent className="flex w-full flex-col items-center pt-20 pb-4">
-        {dedupedSortedMessages.map((message, idx) => (
-          <Message
-            key={message.id}
-            variant={message.role}
-            id={message.id}
-            attachments={message.experimental_attachments}
-            isLast={idx === dedupedSortedMessages.length - 1}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            onReload={onReload}
-            hasScrollAnchor={idx === dedupedSortedMessages.length - 1}
-            parts={message.parts}
-            status={status}
-          >
-            {message.content}
-          </Message>
-        ))}
+        {dedupedSortedMessages.map((message, idx) => {
+          // Determine per-message status
+          let messageStatus: "streaming" | "ready" | "submitted" | "error" = "ready";
+          const isLast = idx === dedupedSortedMessages.length - 1;
+          if (
+            isLast &&
+            message.role === "assistant" &&
+            (status === "streaming" || status === "submitted")
+          ) {
+            messageStatus = status;
+          }
+          return (
+            <Message
+              key={message.id}
+              variant={message.role}
+              id={message.id}
+              attachments={message.experimental_attachments}
+              isLast={isLast}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              onReload={onReload}
+              hasScrollAnchor={isLast}
+              parts={message.parts}
+              status={messageStatus}
+            >
+              {message.content}
+            </Message>
+          );
+        })}
         <ScrollButton />
       </ChatContainerContent>
     </ChatContainerRoot>

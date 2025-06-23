@@ -14,44 +14,15 @@ import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "motion/react"
 import dynamic from "next/dynamic"
 import { redirect } from "next/navigation"
-import { useMemo, useState, useEffect, useRef } from "react"
+import { useMemo, useState } from "react"
 import { useChatCore } from "./use-chat-core"
 import { useChatOperations } from "./use-chat-operations"
 import { useFileUpload } from "./use-file-upload"
-import { FeedbackWidget } from "./feedback-widget"
-import { v4 as uuidv4 } from 'uuid'
-import { PerformanceDashboard } from "./performance-dashboard"
-import { measureAsync } from "@/lib/utils"
 
-// Utility function to generate chat title from conversation
-function generateChatTitle(userMessage: string, assistantMessage: string): string {
-  // Clean and truncate the user message
-  const cleanUserMessage = userMessage
-    .replace(/[^\w\s]/g, '') // Remove special characters
-    .trim()
-    .substring(0, 40)
-  
-  // Clean and truncate the assistant message
-  const cleanAssistantMessage = assistantMessage
-    .replace(/[^\w\s]/g, '') // Remove special characters
-    .trim()
-    .substring(0, 25)
-  
-  // Create a meaningful title
-  if (cleanUserMessage && cleanAssistantMessage) {
-    // If both messages are available, create a combined title
-    const combinedTitle = `${cleanUserMessage}... - ${cleanAssistantMessage}...`
-    return combinedTitle.length > 80 ? combinedTitle.substring(0, 80) : combinedTitle
-  } else if (cleanUserMessage) {
-    // If only user message is available
-    return cleanUserMessage.length > 50 ? `${cleanUserMessage.substring(0, 50)}...` : cleanUserMessage
-  } else if (cleanAssistantMessage) {
-    // If only assistant message is available
-    return cleanAssistantMessage.length > 50 ? `${cleanAssistantMessage.substring(0, 50)}...` : cleanAssistantMessage
-  } else {
-    return "New Chat"
-  }
-}
+const FeedbackWidget = dynamic(
+  () => import("./feedback-widget").then((mod) => mod.FeedbackWidget),
+  { ssr: false }
+)
 
 const DialogAuth = dynamic(
   () => import("./dialog-auth").then((mod) => mod.DialogAuth),
@@ -65,16 +36,15 @@ export function Chat() {
     getChatById,
     updateChatModel,
     bumpChat,
-    updateTitle,
     isLoading: isChatsLoading,
   } = useChats()
 
   const currentChat = useMemo(
-    () => (chatId ? getChatById(chatId) || null : null),
+    () => (chatId ? getChatById(chatId) : null),
     [chatId, getChatById]
   )
 
-  const { messages: messagesFromProvider, cacheAndAddMessage } = useMessages()
+  const { messages: initialMessages, cacheAndAddMessage } = useMessages()
   const { user } = useUser()
   const { preferences } = useUserPreferences()
   const { draftValue, clearDraft } = useChatDraft(chatId)
@@ -92,7 +62,7 @@ export function Chat() {
 
   // Model selection
   const { selectedModel, handleModelChange } = useModel({
-    currentChat: currentChat,
+    currentChat: currentChat || null,
     user,
     updateChatModel,
     chatId,
@@ -106,57 +76,22 @@ export function Chat() {
     [user?.system_prompt]
   )
 
-  // --- Create refs for checkLimitsAndNotify and ensureChatExists ---
-  const checkLimitsAndNotifyRef = useRef((..._args: any[]) => Promise.resolve(true))
-  const ensureChatExistsRef = useRef((..._args: any[]) => Promise.resolve(chatId))
+  // Chat operations (utils + handlers) - created first
+  const { checkLimitsAndNotify, ensureChatExists, handleDelete, handleEdit } =
+    useChatOperations({
+      isAuthenticated,
+      chatId,
+      messages: initialMessages,
+      input: draftValue,
+      selectedModel,
+      systemPrompt,
+      createNewChat,
+      setHasDialogAuth,
+      setMessages: () => {},
+      setInput: () => {},
+    })
 
-  // --- Initialize useChatCore with refs ---
-  const chatCore = useChatCore({
-    initialMessages: [],
-    draftValue,
-    cacheAndAddMessage,
-    chatId,
-    user,
-    files,
-    createOptimisticAttachments,
-    setFiles,
-    checkLimitsAndNotify: (...args) => checkLimitsAndNotifyRef.current(...args),
-    cleanupOptimisticAttachments,
-    ensureChatExists: (...args) => ensureChatExistsRef.current(...args),
-    handleFileUploads,
-    selectedModel,
-    clearDraft,
-    bumpChat,
-  })
-
-  // --- Sync messages from provider to chat core ---
-  useEffect(() => {
-    if (messagesFromProvider.length > 0) {
-      chatCore.setMessages(messagesFromProvider)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesFromProvider])
-
-  // --- Now initialize useChatOperations with real setters from chatCore ---
-  const chatOps = useChatOperations({
-    isAuthenticated,
-    chatId,
-    messages: chatCore.messages,
-    input: chatCore.input,
-    selectedModel,
-    systemPrompt,
-    createNewChat,
-    setHasDialogAuth,
-    setMessages: chatCore.setMessages,
-    setInput: chatCore.handleInputChange,
-  })
-
-  // --- After chatOps is initialized, update the refs ---
-  useEffect(() => {
-    checkLimitsAndNotifyRef.current = chatOps.checkLimitsAndNotify
-    ensureChatExistsRef.current = chatOps.ensureChatExists
-  }, [chatOps.checkLimitsAndNotify, chatOps.ensureChatExists])
-
+  // Core chat functionality (initialization + state + actions)
   const {
     messages,
     input,
@@ -170,57 +105,34 @@ export function Chat() {
     handleSuggestion,
     handleReload,
     handleInputChange,
-    setMessages,
-  } = chatCore
-
-  // Handle title updates in useEffect to avoid setState during render
-  useEffect(() => {
-    const handleTitleUpdate = async () => {
-      if (!chatId || messages.length < 2) return
-      
-      const assistantMessage = messages.find(m => m.role === "assistant")
-      const userMessage = messages.find(m => m.role === "user")
-      
-      if (!assistantMessage || !userMessage) return
-      
-      // Only update title if it's still the default title or if it's a new chat
-      const currentChat = getChatById(chatId)
-      const currentTitle = currentChat?.title || ""
-      const isDefaultTitle = !currentTitle || 
-        currentTitle === "New Chat" || 
-        currentTitle === "Untitled Chat" ||
-        currentTitle.startsWith("optimistic-")
-      
-      if (isDefaultTitle) {
-        const newTitle = generateChatTitle(userMessage.content, assistantMessage.content)
-        console.log("Generated new title:", newTitle)
-        
-        try {
-          await updateTitle(chatId, newTitle)
-          console.log("Chat title updated successfully")
-        } catch (error) {
-          console.error("Failed to update chat title:", error)
-        }
-      }
-    }
-
-    // Only run title update when we have a new assistant message
-    const lastMessage = messages[messages.length - 1]
-    if (lastMessage?.role === "assistant") {
-      handleTitleUpdate()
-    }
-  }, [messages, chatId, getChatById, updateTitle])
+  } = useChatCore({
+    initialMessages,
+    draftValue,
+    cacheAndAddMessage,
+    chatId,
+    user,
+    files,
+    createOptimisticAttachments,
+    setFiles,
+    checkLimitsAndNotify,
+    cleanupOptimisticAttachments,
+    ensureChatExists,
+    handleFileUploads,
+    selectedModel,
+    clearDraft,
+    bumpChat,
+  })
 
   // Memoize the conversation props to prevent unnecessary rerenders
   const conversationProps = useMemo(
     () => ({
-      messages: chatCore.messages,
+      messages,
       status,
-      onDelete: chatOps.handleDelete,
-      onEdit: chatOps.handleEdit,
+      onDelete: handleDelete,
+      onEdit: handleEdit,
       onReload: handleReload,
     }),
-    [chatCore.messages, status, chatOps.handleDelete, chatOps.handleEdit, handleReload]
+    [messages, status, handleDelete, handleEdit, handleReload]
   )
 
   // Memoize the chat input props
@@ -235,7 +147,7 @@ export function Chat() {
       onFileUpload: handleFileUpload,
       onFileRemove: handleFileRemove,
       hasSuggestions:
-        preferences.promptSuggestions && !chatId && chatCore.messages.length === 0,
+        preferences.promptSuggestions && !chatId && messages.length === 0,
       onSelectModel: handleModelChange,
       selectedModel,
       isUserAuthenticated: isAuthenticated,
@@ -255,7 +167,7 @@ export function Chat() {
       handleFileRemove,
       preferences.promptSuggestions,
       chatId,
-      chatCore.messages.length,
+      messages.length,
       handleModelChange,
       selectedModel,
       isAuthenticated,
@@ -330,10 +242,7 @@ export function Chat() {
         <ChatInput {...chatInputProps} />
       </motion.div>
 
-      <div className="fixed right-1 bottom-1 z-50 flex gap-2">
-        <FeedbackWidget authUserId={user?.id} />
-        {preferences.showPerformanceDashboard && <PerformanceDashboard />}
-      </div>
+      <FeedbackWidget authUserId={user?.id} />
     </div>
   )
 }
