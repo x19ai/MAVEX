@@ -19,6 +19,11 @@
       opacity: 1;
     }
   }
+
+  @keyframes mavex-border {
+    0% { filter: blur(4px) hue-rotate(0deg); }
+    100% { filter: blur(4px) hue-rotate(360deg); }
+  }
 }
 
 @theme inline {
@@ -159,4 +164,8 @@ code {
 /* sonner toast */
 [data-sonner-toaster] > li {
   width: 100%;
+}
+
+.animate-mavex-border {
+  animation: mavex-border 3s linear infinite;
 }

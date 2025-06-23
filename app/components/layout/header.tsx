@@ -53,7 +53,6 @@ export function Header({ hasSidebar }: { hasSidebar: boolean }) {
             </div>
             {!isLoggedIn ? (
               <>
-                <SettingsTrigger />
                 <AppInfoTrigger
                   trigger={
                     <Button
