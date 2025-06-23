@@ -2,12 +2,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from "@/lib/user-store/provider"
-import { User } from "@phosphor-icons/react"
+import { Eye, EyeSlash, User } from "@phosphor-icons/react"
 import { formatWalletAddress } from "@/lib/utils"
 import { TokenBalance } from "./token-balance"
+import { useUserPreferences } from "@/lib/user-preference-store/provider"
+import { Button } from "@/components/ui/button"
 
 export function UserProfile() {
   const { user } = useUser()
+  const { preferences, setWalletAddressHidden } = useUserPreferences()
 
   return (
     <div>
@@ -25,9 +28,16 @@ export function UserProfile() {
         </div>
         <div>
           <h4 className="text-sm font-medium">{user?.display_name || "Guest User"}</h4>
-          <p className="text-muted-foreground text-sm">
-            {user?.wallet_type === 'google' ? user?.email : user?.wallet_address || "Not signed in"}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground text-sm">
+              {user?.wallet_type === 'google' ? user?.email : preferences.isWalletAddressHidden ? '******************' : (user?.wallet_address || "Not signed in")}
+            </p>
+            {user?.wallet_type !== 'google' && user?.wallet_address && (
+              <Button variant="ghost" size="icon" className="size-6" onClick={() => setWalletAddressHidden(!preferences.isWalletAddressHidden)}>
+                {preferences.isWalletAddressHidden ? <EyeSlash size={16} /> : <Eye size={16} />}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       <TokenBalance />

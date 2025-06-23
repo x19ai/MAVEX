@@ -87,7 +87,7 @@ export function MessageAssistant({
           <SearchImages results={searchImageResults} />
         )}
 
-        {contentNullOrEmpty ? (
+        {status === "submitted" ? (
           <div className="flex items-center py-4">
             <Loader />
           </div>

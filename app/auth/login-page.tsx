@@ -9,6 +9,16 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { HeaderGoBack } from "../components/header-go-back"
 import Image from "next/image"
+import {
+  CheckCircle,
+  XCircle,
+  Star,
+  MessageSquare,
+  UploadCloud,
+  Zap,
+  Users,
+  Award,
+} from "lucide-react"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -186,48 +196,142 @@ export default function LoginPage() {
             </div>
           )}
           <div className="mt-8 space-y-4">
-            {/* <Button
-              variant="secondary"
-              className="w-full text-base sm:text-base"
-              size="lg"
-              onClick={handleSignInWithGoogle}
-              disabled={isLoading}
-            >
-              <img
-                src="https://www.google.com/favicon.ico"
-                alt="Google logo"
-                width={20}
-                height={20}
-                className="mr-2 size-4"
-              />
-              <span>
-                {isLoading ? "Connecting..." : "Continue with Google"}
-              </span>
-            </Button> */}
+            {isPhantomAvailable ? (
+              <Button
+                variant="secondary"
+                className="w-full border-none bg-[#ab9ff2] text-base text-white hover:bg-[#ab9ff2]/90 sm:text-base"
+                size="lg"
+                onClick={handleSignInWithPhantom}
+                disabled={isLoading}
+              >
+                <Image
+                  src="/Phantom-Icon_Transparent_White.svg"
+                  alt="Phantom logo"
+                  width={20}
+                  height={20}
+                  className="mr-2"
+                />
+                Continue with Phantom
+              </Button>
+            ) : (
+              <a
+                href="https://phantom.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  variant="secondary"
+                  className="w-full text-base sm:text-base"
+                  size="lg"
+                >
+                  <Image
+                    src="/Phantom-Icon_Transparent_White.svg"
+                    alt="Phantom logo"
+                    width={20}
+                    height={20}
+                    className="mr-2"
+                  />
+                  Install Phantom Wallet
+                </Button>
+              </a>
+            )}
+          </div>
+        </div>
 
-            <Button
-              variant="secondary"
-              className="w-full text-base sm:text-base"
-              size="lg"
-              onClick={handleSignInWithPhantom}
-              disabled={isLoading}
-            >
-              <Image
-                src="/Phantom-Icon_App.svg"
-                alt="Phantom logo"
-                width={20}
-                height={20}
-                className="mr-2 size-4"
-              />
-              <span>
-                {isLoading ? "Connecting..." : "Continue with Phantom"}
-              </span>
-            </Button>
+        <div className="mt-16 w-full max-w-5xl px-4">
+          <h2 className="text-center text-2xl font-medium tracking-tight">
+            Feature Comparison
+          </h2>
+          <p className="text-muted-foreground mt-2 text-center">
+            Choose the plan that's right for you.
+          </p>
+          <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+            {/* Guest Plan */}
+            <div className="border-border/50 rounded-lg border p-6">
+              <h3 className="text-lg font-medium">Guest</h3>
+              <p className="text-muted-foreground mt-2 text-sm">
+                For users who want to try out the basics.
+              </p>
+              <ul className="mt-6 space-y-4">
+                <li className="flex items-center">
+                  <MessageSquare className="text-muted-foreground mr-3 h-5 w-5" />
+                  <span>5 daily messages</span>
+                </li>
+                <li className="flex items-center">
+                  <Zap className="text-muted-foreground mr-3 h-5 w-5" />
+                  <span>Access to free models</span>
+                </li>
+                <li className="flex items-center">
+                  <UploadCloud className="text-muted-foreground mr-3 h-5 w-5" />
+                  <span>5 daily file uploads</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Authenticated Plan */}
+            <div className="border-border/50 rounded-lg border p-6">
+              <h3 className="text-lg font-medium">Authenticated</h3>
+              <p className="text-muted-foreground mt-2 text-sm">
+                For regular users who need more power.
+              </p>
+              <ul className="mt-6 space-y-4">
+                <li className="flex items-center">
+                  <MessageSquare className="text-primary mr-3 h-5 w-5" />
+                  <span>1000 daily messages</span>
+                </li>
+                <li className="flex items-center">
+                  <Zap className="text-primary mr-3 h-5 w-5" />
+                  <span>Access to all models</span>
+                </li>
+                <li className="flex items-center">
+                  <UploadCloud className="text-primary mr-3 h-5 w-5" />
+                  <span>5 daily file uploads</span>
+                </li>
+                <li className="flex items-center">
+                  <Users className="text-primary mr-3 h-5 w-5" />
+                  <span>Saved chat history</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* $MAVEX Holder Plan */}
+            <div className="border-primary/50 rounded-lg border-2 border-primary p-6 shadow-lg">
+              <h3 className="flex items-center text-lg font-medium text-primary">
+                $MAVEX Holder
+                <Star className="ml-2 h-5 w-5 fill-current" />
+              </h3>
+              <p className="text-muted-foreground mt-2 text-sm">
+                For our most dedicated and valued users.
+              </p>
+              <ul className="mt-6 space-y-4">
+                <li className="flex items-center">
+                  <MessageSquare className="text-primary mr-3 h-5 w-5" />
+                  <span className="font-semibold">Unlimited messages</span>
+                </li>
+                <li className="flex items-center">
+                  <Zap className="text-primary mr-3 h-5 w-5" />
+                  <span className="font-semibold">Exclusive model access</span>
+                </li>
+                <li className="flex items-center">
+                  <UploadCloud className="text-primary mr-3 h-5 w-5" />
+                  <span className="font-semibold">
+                    Increased file upload limits
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Award className="text-primary mr-3 h-5 w-5" />
+                  <span className="font-semibold">
+                    Early access to new features
+                  </span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </main>
 
-      <footer className="text-muted-foreground py-6 text-center text-sm">
+      <footer className="text-muted-foreground p-4 text-center text-sm">
         <p>
           By continuing, you agree to our{" "}
           <Link href="/" className="text-foreground hover:underline">

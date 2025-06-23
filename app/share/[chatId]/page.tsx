@@ -39,12 +39,21 @@ export async function generateMetadata({
       title,
       description,
       type: "article",
-      url: `${APP_DOMAIN}/share/${chatId}`,
+      url: `${APP_DOMAIN}share/${chatId}`,
+      images: [
+        {
+          url: `${APP_DOMAIN}cover.png`,
+          width: 1200,
+          height: 630,
+          alt: `${APP_NAME} Chat Preview`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [`${APP_DOMAIN}cover.png`],
     },
   }
 }

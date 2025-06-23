@@ -12,6 +12,7 @@ type UserPreferences = {
   showConversationPreviews: boolean
   hiddenModels: string[] // Array of model IDs that should be hidden
   showPerformanceDashboard: boolean // Show performance monitoring dashboard
+  isWalletAddressHidden: boolean
 }
 
 const defaultPreferences: UserPreferences = {
@@ -21,6 +22,7 @@ const defaultPreferences: UserPreferences = {
   showConversationPreviews: true,
   hiddenModels: [],
   showPerformanceDashboard: false, // Default to false
+  isWalletAddressHidden: false,
 }
 
 const PREFERENCES_STORAGE_KEY = "user-preferences"
@@ -35,6 +37,7 @@ interface UserPreferencesContextType {
   setShowPerformanceDashboard: (enabled: boolean) => void
   toggleModelVisibility: (modelId: string) => void
   isModelHidden: (modelId: string) => boolean
+  setWalletAddressHidden: (hidden: boolean) => void
 }
 
 const UserPreferencesContext = createContext<
@@ -120,6 +123,10 @@ export function UserPreferencesProvider({
     updatePreferences({ showPerformanceDashboard: enabled })
   }
 
+  const setWalletAddressHidden = (hidden: boolean) => {
+    updatePreferences({ isWalletAddressHidden: hidden })
+  }
+
   const toggleModelVisibility = (modelId: string) => {
     const currentHidden = preferences.hiddenModels || []
     const isHidden = currentHidden.includes(modelId)
@@ -145,6 +152,7 @@ export function UserPreferencesProvider({
         setShowPerformanceDashboard,
         toggleModelVisibility,
         isModelHidden,
+        setWalletAddressHidden,
       }}
     >
       {children}

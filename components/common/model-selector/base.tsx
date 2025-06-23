@@ -96,6 +96,8 @@ export function ModelSelector({
 
   // Ref for input to maintain focus
   const searchInputRef = useRef<HTMLInputElement>(null)
+  // Ref for the trigger button to blur after selection
+  const triggerButtonRef = useRef<HTMLButtonElement>(null)
 
   useKeyShortcut(
     (e) => (e.key === "p" || e.key === "P") && e.metaKey && e.shiftKey,
@@ -117,6 +119,7 @@ export function ModelSelector({
 
   const trigger = (
     <Button
+      ref={triggerButtonRef}
       variant="outline"
       className={cn("dark:bg-secondary justify-between", className)}
       disabled={isLoadingModels}
@@ -190,6 +193,8 @@ export function ModelSelector({
 
                         setSelectedModelId(model.id)
                         setIsDropdownOpen(false)
+                        // Blur the trigger button to prevent tooltip from showing
+                        triggerButtonRef.current?.blur()
                       }}
                       onFocus={() => {
                         if (isDropdownOpen) {
@@ -258,6 +263,7 @@ export function ModelSelector({
             sideOffset={4}
             forceMount
             side="top"
+            onCloseAutoFocus={e => e.preventDefault()}
           >
             <div className="bg-background sticky top-0 z-10 rounded-t-md border-b px-0 pt-0 pb-0">
               <div className="relative">
@@ -302,6 +308,8 @@ export function ModelSelector({
 
                         setSelectedModelId(model.id)
                         setIsDropdownOpen(false)
+                        // Blur the trigger button to prevent tooltip from showing
+                        triggerButtonRef.current?.blur()
                       }}
                       onFocus={() => {
                         if (isDropdownOpen) {
@@ -334,7 +342,8 @@ export function ModelSelector({
                 </div>
               )}
             </div>
-            {hoveredModelData && (
+            {/* Only show SubMenu when dropdown is open and a model is hovered */}
+            {isDropdownOpen && hoveredModelData && (
               <div className="absolute left-[305px] top-0">
                 <SubMenu hoveredModelData={hoveredModelData} />
               </div>

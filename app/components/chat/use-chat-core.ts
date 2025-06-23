@@ -139,7 +139,6 @@ export function useChatCore({
       }
 
       const optimisticUserId = `optimistic-user-${uuidv4()}`
-      const optimisticAssistantId = `optimistic-assistant-${uuidv4()}`
       const optimisticAttachments =
         files.length > 0 ? createOptimisticAttachments(files) : []
 
@@ -152,14 +151,7 @@ export function useChatCore({
           optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
       }
 
-      const optimisticAssistantMessage: Message = {
-        id: optimisticAssistantId,
-        content: "", // Empty content so the loading animation shows
-        role: "assistant" as const,
-        createdAt: new Date(),
-      }
-
-      setMessages(prev => [...prev, optimisticUserMessage, optimisticAssistantMessage])
+      setMessages(prev => [...prev, optimisticUserMessage])
       setInput("")
 
       const submittedFiles = [...files]
@@ -167,14 +159,14 @@ export function useChatCore({
 
       const allowed = await checkLimitsAndNotify(uid)
       if (!allowed) {
-        setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
+        setMessages(prev => prev.filter(m => m.id !== optimisticUserId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
 
       const currentChatId = await ensureChatExists(uid, messages)
       if (!currentChatId) {
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
@@ -184,7 +176,7 @@ export function useChatCore({
           title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
           status: "error",
         })
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
@@ -193,7 +185,7 @@ export function useChatCore({
       if (submittedFiles.length > 0) {
         attachments = await handleFileUploads(uid, currentChatId)
         if (attachments === null) {
-          setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
+          setMessages(prev => prev.filter(m => m.id !== optimisticUserId))
           cleanupOptimisticAttachments(
             optimisticUserMessage.experimental_attachments
           )
