@@ -10,6 +10,7 @@ type UserPreferences = {
   promptSuggestions: boolean
   showToolInvocations: boolean
   showConversationPreviews: boolean
+  multiModelEnabled: boolean
   hiddenModels: string[] // Array of model IDs that should be hidden
   showPerformanceDashboard: boolean // Show performance monitoring dashboard
   isWalletAddressHidden: boolean
@@ -20,6 +21,7 @@ const defaultPreferences: UserPreferences = {
   promptSuggestions: true,
   showToolInvocations: true,
   showConversationPreviews: true,
+  multiModelEnabled: false,
   hiddenModels: [],
   showPerformanceDashboard: false, // Default to false
   isWalletAddressHidden: false,
@@ -35,6 +37,7 @@ interface UserPreferencesContextType {
   setShowToolInvocations: (enabled: boolean) => void
   setShowConversationPreviews: (enabled: boolean) => void
   setShowPerformanceDashboard: (enabled: boolean) => void
+  setMultiModelEnabled: (enabled: boolean) => void
   toggleModelVisibility: (modelId: string) => void
   isModelHidden: (modelId: string) => boolean
   setWalletAddressHidden: (hidden: boolean) => void
@@ -127,6 +130,10 @@ export function UserPreferencesProvider({
     updatePreferences({ isWalletAddressHidden: hidden })
   }
 
+  const setMultiModelEnabled = (enabled: boolean) => {
+    updatePreferences({ multiModelEnabled: enabled })
+  }
+
   const toggleModelVisibility = (modelId: string) => {
     const currentHidden = preferences.hiddenModels || []
     const isHidden = currentHidden.includes(modelId)
@@ -150,6 +157,7 @@ export function UserPreferencesProvider({
         setShowToolInvocations,
         setShowConversationPreviews,
         setShowPerformanceDashboard,
+        setMultiModelEnabled,
         toggleModelVisibility,
         isModelHidden,
         setWalletAddressHidden,

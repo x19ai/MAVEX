@@ -16,15 +16,13 @@ import { useState } from "react"
 import { ByokSection } from "./apikeys/byok-section"
 import { InteractionPreferences } from "./appearance/interaction-preferences"
 import { LayoutSettings } from "./appearance/layout-settings"
-import { PerformanceMonitoring } from "./appearance/performance-monitoring"
 import { ThemeSelection } from "./appearance/theme-selection"
 import { ConnectionsPlaceholder } from "./connections/connections-placeholder"
 import { DeveloperTools } from "./connections/developer-tools"
 import { OllamaSection } from "./connections/ollama-section"
 import { AccountManagement } from "./general/account-management"
-import { ModelPreferences } from "./general/model-preferences"
 import { UserProfile } from "./general/user-profile"
-import { ModelVisibilitySettings } from "./models/model-visibility-settings"
+import { ModelsSettings } from "./models/models-settings"
 
 type SettingsContentProps = {
   onClose: () => void
@@ -109,15 +107,17 @@ export function SettingsContent({
             {/* Mobile tabs content */}
             <TabsContent value="general" className="space-y-6 px-6">
               <UserProfile />
-              <ModelPreferences />
-              <AccountManagement />
+              {isSupabaseEnabled && (
+                <>
+                  <AccountManagement />
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value="appearance" className="space-y-6 px-6">
               <ThemeSelection />
               <LayoutSettings />
               <InteractionPreferences />
-              <PerformanceMonitoring />
             </TabsContent>
 
             <TabsContent value="apikeys" className="px-6">
@@ -125,7 +125,8 @@ export function SettingsContent({
             </TabsContent>
 
             <TabsContent value="models" className="px-6">
-              <ModelVisibilitySettings />
+              <ModelsSettings />
+              {/* <ModelVisibilitySettings /> */}
             </TabsContent>
 
             <TabsContent value="connections" className="space-y-6 px-6">
@@ -193,15 +194,17 @@ export function SettingsContent({
             <div className="flex-1 overflow-auto px-6 pt-4">
               <TabsContent value="general" className="mt-0 space-y-6">
                 <UserProfile />
-                <ModelPreferences />
-                <AccountManagement />
+                {isSupabaseEnabled && (
+                  <>
+                    <AccountManagement />
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="appearance" className="mt-0 space-y-6">
                 <ThemeSelection />
                 <LayoutSettings />
                 <InteractionPreferences />
-                <PerformanceMonitoring />
               </TabsContent>
 
               <TabsContent value="apikeys" className="mt-0 space-y-6">
@@ -209,7 +212,8 @@ export function SettingsContent({
               </TabsContent>
 
               <TabsContent value="models" className="mt-0 space-y-6">
-                <ModelVisibilitySettings />
+                <ModelsSettings />
+                {/* <ModelVisibilitySettings /> */}
               </TabsContent>
 
               <TabsContent value="connections" className="mt-0 space-y-6">

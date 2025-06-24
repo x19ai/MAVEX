@@ -88,11 +88,23 @@ export async function GET(request: Request) {
   }
 
   try {
+<<<<<<< HEAD
     const { data: existingUser, error: fetchError } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('id', user.id)
       .maybeSingle()
+=======
+    // Try to insert user only if not exists
+    const { error: insertError } = await supabaseAdmin.from("users").insert({
+      id: user.id,
+      email: user.email,
+      created_at: new Date().toISOString(),
+      message_count: 0,
+      premium: false,
+      favorite_models: [MODEL_DEFAULT],
+    })
+>>>>>>> upstream/main
 
     if (fetchError) {
       throw fetchError

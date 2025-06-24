@@ -9,14 +9,12 @@ import {
 } from "@/components/prompt-kit/prompt-input"
 import { Button } from "@/components/ui/button"
 import { getModelInfo } from "@/lib/models"
-import { ArrowUp, Stop, Warning } from "@phosphor-icons/react"
-import React, { useCallback, useEffect, useMemo, useRef } from "react"
+import { ArrowUpIcon, StopIcon } from "@phosphor-icons/react"
+import { useCallback, useMemo } from "react"
 import { PromptSystem } from "../suggestions/prompt-system"
 import { ButtonFileUpload } from "./button-file-upload"
 import { ButtonSearch } from "./button-search"
 import { FileList } from "./file-list"
-import { APP_NAME } from "@/lib/config"
-import { v4 as uuidv4 } from 'uuid'
 
 type ChatInputProps = {
   value: string
@@ -56,10 +54,7 @@ export function ChatInput({
   setEnableSearch,
   enableSearch,
 }: ChatInputProps) {
-  const fileCounter = useRef(0)
-
   const selectModelConfig = getModelInfo(selectedModel)
-  const hasToolSupport = Boolean(selectModelConfig?.tools)
   const hasSearchSupport = Boolean(selectModelConfig?.webSearch)
   const isOnlyWhitespace = (text: string) => !/[^\s]/.test(text)
 
@@ -101,7 +96,7 @@ export function ChatInput({
   )
 
   const handlePaste = useCallback(
-    async (e: ClipboardEvent) => {
+    async (e: React.ClipboardEvent) => {
       const items = e.clipboardData?.items
       if (!items) return
 
@@ -123,7 +118,7 @@ export function ChatInput({
             if (file) {
               const newFile = new File(
                 [file],
-                `pasted-image-${uuidv4()}.${file.type.split("/")[1]}`,
+                `pasted-image-${Date.now()}.${file.type.split("/")[1]}`,
                 { type: file.type }
               )
               imageFiles.push(newFile)
@@ -164,8 +159,9 @@ export function ChatInput({
         >
           <FileList files={files} onFileRemove={onFileRemove} />
           <PromptInputTextarea
-            placeholder={`Ask ${APP_NAME}`}
+            placeholder="Ask Zola"
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             className="min-h-[44px] pt-3 pl-4 text-base leading-[1.3] sm:text-base md:text-base"
           />
           <PromptInputActions className="mt-5 w-full justify-between px-3 pb-3">
@@ -195,15 +191,15 @@ export function ChatInput({
               <Button
                 size="sm"
                 className="size-9 rounded-full transition-all duration-300 ease-out"
-                disabled={Boolean(!value || isSubmitting || isOnlyWhitespace(value || ""))}
+                disabled={!value || isSubmitting || isOnlyWhitespace(value)}
                 type="button"
                 onClick={handleSend}
                 aria-label={status === "streaming" ? "Stop" : "Send message"}
               >
                 {status === "streaming" ? (
-                  <Stop className="size-4" />
+                  <StopIcon className="size-4" />
                 ) : (
-                  <ArrowUp className="size-4" />
+                  <ArrowUpIcon className="size-4" />
                 )}
               </Button>
             </PromptInputAction>
