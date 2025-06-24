@@ -88,24 +88,50 @@ export async function GET(request: Request) {
   }
 
   try {
-<<<<<<< HEAD
     const { data: existingUser, error: fetchError } = await supabaseAdmin
+    .from('users')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle()
+  
+  if (fetchError) {
+    throw fetchError
+  }
+  
+  if (existingUser) {
+    // User exists, update necessary fields
+    const { error: updateError } = await supabaseAdmin
       .from('users')
-      .select('id')
+      .update({ email: user.email, wallet_type: 'google' })
       .eq('id', user.id)
-      .maybeSingle()
-=======
-    // Try to insert user only if not exists
-    const { error: insertError } = await supabaseAdmin.from("users").insert({
+  
+    if (updateError) {
+      console.error('Error updating user:', updateError)
+    }
+  } else {
+    // User does not exist, create new user
+    const randomAnimal = getRandomAnimal()
+    const userDisplayName = user.user_metadata?.name || randomAnimal.name
+    const userProfileImage =
+      user.user_metadata?.avatar_url || randomAnimal.image
+  
+    const { error: insertError } = await supabaseAdmin.from('users').insert({
       id: user.id,
       email: user.email,
+      display_name: userDisplayName,
+      profile_image: userProfileImage,
       created_at: new Date().toISOString(),
       message_count: 0,
       premium: false,
-      favorite_models: [MODEL_DEFAULT],
+      preferred_model: MODEL_DEFAULT,
+      wallet_type: 'google',
+      wallet_address: null
     })
->>>>>>> upstream/main
-
+  
+    if (insertError) {
+      console.error('Error inserting user:', insertError)
+    }
+  }
     if (fetchError) {
       throw fetchError
     }

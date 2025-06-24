@@ -53,12 +53,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-<<<<<<< HEAD
     // Refresh the models cache to ensure immediate availability
     refreshModelsCache()
 
-    return NextResponse.json({ success: true })
-=======
     // If this is a new API key, add provider models to favorites
     if (isNewKey) {
       try {
@@ -115,7 +112,6 @@ export async function POST(request: Request) {
         ? `API key saved and ${provider} models added to favorites`
         : "API key updated",
     })
->>>>>>> upstream/main
   } catch (error) {
     console.error("Error in POST /api/user-keys:", error)
     return NextResponse.json(
