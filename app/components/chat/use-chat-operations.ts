@@ -10,7 +10,6 @@ type UseChatOperationsProps = {
   isAuthenticated: boolean
   chatId: string | null
   messages: Message[]
-  input: string
   selectedModel: string
   systemPrompt: string
   createNewChat: (
@@ -31,7 +30,6 @@ export function useChatOperations({
   isAuthenticated,
   chatId,
   messages,
-  input,
   selectedModel,
   systemPrompt,
   createNewChat,
@@ -76,17 +74,21 @@ export function useChatOperations({
     }
   }
 
-  const ensureChatExists = async (userId: string, messages: Message[]) => {
+  const ensureChatExists = async (
+    userId: string,
+    _messages: Message[],
+    title: string
+  ) => {
     if (!isAuthenticated) {
       const storedGuestChatId = localStorage.getItem("guestChatId")
       if (storedGuestChatId) return storedGuestChatId
     }
 
-    if (messages.length === 0) {
+    if (!chatId) {
       try {
         const newChat = await createNewChat(
           userId,
-          input,
+          title,
           selectedModel,
           isAuthenticated,
           systemPrompt

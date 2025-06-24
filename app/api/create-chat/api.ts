@@ -37,7 +37,7 @@ export async function createChatInDb({
     project_id?: string
   } = {
     user_id: userId,
-    title: title || "New Chat",
+    title: title || '',
     model,
   }
 

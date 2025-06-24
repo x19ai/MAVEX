@@ -22,7 +22,11 @@ type UseChatCoreProps = {
   setFiles: (files: File[]) => void
   checkLimitsAndNotify: (uid: string) => Promise<boolean>
   cleanupOptimisticAttachments: (attachments?: any[]) => void
-  ensureChatExists: (uid: string, messages: Message[]) => Promise<string | null>
+  ensureChatExists: (
+    uid: string,
+    messages: Message[],
+    title: string
+  ) => Promise<string | null>
   handleFileUploads: (
     uid: string,
     chatId: string
@@ -124,7 +128,6 @@ export function useChatCore({
 
   // Submit action
   const submit = useCallback(async () => {
-    console.log('submit called')
     setIsSubmitting(true)
 
     try {
@@ -164,7 +167,7 @@ export function useChatCore({
         return
       }
 
-      const currentChatId = await ensureChatExists(uid, messages)
+      const currentChatId = await ensureChatExists(uid, messages, messageContent)
       if (!currentChatId) {
         setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
@@ -287,7 +290,7 @@ export function useChatCore({
           return
         }
 
-        const currentChatId = await ensureChatExists(uid, messages)
+        const currentChatId = await ensureChatExists(uid, messages, suggestion)
 
         if (!currentChatId) {
           setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
