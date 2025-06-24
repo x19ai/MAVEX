@@ -18,7 +18,7 @@ type UseChatCoreProps = {
   chatId: string | null
   user: any
   files: File[]
-  createOptimisticAttachments: (files: File[]) => any[]
+  createOptimisticAttachments: (files: File[]) => Promise<any[]>
   setFiles: (files: File[]) => void
   checkLimitsAndNotify: (uid: string) => Promise<boolean>
   cleanupOptimisticAttachments: (attachments?: any[]) => void
@@ -143,7 +143,7 @@ export function useChatCore({
 
       const optimisticUserId = `optimistic-user-${uuidv4()}`
       const optimisticAttachments =
-        files.length > 0 ? createOptimisticAttachments(files) : []
+        files.length > 0 ? await createOptimisticAttachments(files) : []
 
       const optimisticUserMessage: Message = {
         id: optimisticUserId,

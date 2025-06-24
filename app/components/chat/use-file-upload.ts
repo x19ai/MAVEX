@@ -6,6 +6,15 @@ import {
 } from "@/lib/file-handling"
 import { useCallback, useState } from "react"
 
+const fileToDataURL = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export const useFileUpload = () => {
   const [files, setFiles] = useState<File[]>([])
 
@@ -35,12 +44,26 @@ export const useFileUpload = () => {
     }
   }
 
-  const createOptimisticAttachments = (files: File[]) => {
-    return files.map((file) => ({
-      name: file.name,
-      contentType: file.type,
-      url: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
-    }))
+  const createOptimisticAttachments = async (files: File[]) => {
+    const attachments = await Promise.all(
+      files.map(async file => {
+        let url = ""
+        if (file.type.startsWith("image/")) {
+          try {
+            url = await fileToDataURL(file)
+          } catch (error) {
+            console.error("Error converting file to data URL:", error)
+          }
+        }
+        return {
+          name: file.name,
+          contentType: file.type,
+          url,
+        }
+      })
+    )
+
+    return attachments
   }
 
   const cleanupOptimisticAttachments = (attachments?: Array<{ url?: string }>) => {
