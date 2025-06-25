@@ -128,7 +128,12 @@ export async function getModelsWithAccessFlags(): Promise<ModelConfig[]> {
       accessible: false,
     }))
 
-  return [...freeModels, ...proModels]
+  // Combine and sort: unlocked first, then locked, each alphabetically by name
+  const sorted = [...freeModels, ...proModels].sort((a, b) => {
+    if (a.accessible !== b.accessible) return a.accessible ? -1 : 1
+    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  })
+  return sorted
 }
 
 export async function getModelsForProvider(
@@ -161,13 +166,15 @@ export async function getModelsForUserProviders(
       accessible: true,
     }))
 
-  console.log("Filtered models count:", userModels.length)
-  console.log("Models by provider:", userModels.reduce((acc, model) => {
+  // Sort unlocked models alphabetically by name
+  const sorted = userModels.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+  console.log("Filtered models count:", sorted.length)
+  console.log("Models by provider:", sorted.reduce((acc, model) => {
     acc[model.providerId] = (acc[model.providerId] || 0) + 1
     return acc
   }, {} as Record<string, number>))
 
-  return userModels
+  return sorted
 }
 
 // Synchronous function to get model info for simple lookups

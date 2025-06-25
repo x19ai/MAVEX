@@ -84,7 +84,7 @@ export function ModelSelector({
   const renderModelItem = (model: ModelConfig) => {
     const isLocked = !model.accessible
     const provider = PROVIDERS.find((provider) => provider.id === model.icon)
-
+    const isMavexFree = model.accessibleReason === "mavex"
     return (
       <div
         key={model.id}
@@ -93,12 +93,11 @@ export function ModelSelector({
           selectedModelId === model.id && "bg-accent"
         )}
         onClick={() => {
-          if (isLocked) {
+          if (isLocked && !isMavexFree) {
             setSelectedProModel(model.id)
             setIsProDialogOpen(true)
             return
           }
-
           setSelectedModelId(model.id)
           if (isMobile) {
             setIsDrawerOpen(false)
@@ -113,7 +112,11 @@ export function ModelSelector({
             <span className="text-sm">{model.name}</span>
           </div>
         </div>
-        {isLocked && (
+        {isMavexFree ? (
+          <div className="border-input bg-accent text-green-600 flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
+            <span>FREE</span>
+          </div>
+        ) : isLocked && (
           <div className="border-input bg-accent text-muted-foreground flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
             <StarIcon className="size-2" />
             <span>Locked</span>
@@ -139,18 +142,14 @@ export function ModelSelector({
     .filter((model) =>
       model.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    // Only sort if favoriteModels is active, otherwise preserve backend order
     .sort((a, b) => {
-      // If user has favorite models, maintain their order
       if (favoriteModels && favoriteModels.length > 0) {
         const aIndex = favoriteModels.indexOf(a.id)
         const bIndex = favoriteModels.indexOf(b.id)
         return aIndex - bIndex
       }
-
-      // Fallback to original sorting (free models first)
-      const aIsFree = FREE_MODELS_IDS.includes(a.id)
-      const bIsFree = FREE_MODELS_IDS.includes(b.id)
-      return aIsFree === bIsFree ? 0 : aIsFree ? -1 : 1
+      return 0 // preserve backend order
     })
 
   const trigger = (

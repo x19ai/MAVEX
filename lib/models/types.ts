@@ -40,6 +40,7 @@ type ModelConfig = {
   ) => LanguageModelV1
 
   accessible?: boolean // true if the model is accessible to the user
+  accessibleReason?: string // e.g. 'mavex' if unlocked by MAVEX token
 }
 
 export type { ModelConfig }

@@ -36,7 +36,7 @@ export function FeatureComparison() {
       </p>
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-none">
         {/* Guest Plan */}
-        <div className="border-border/50 rounded-lg border p-6">
+        <div className="border-border/50 rounded-lg border p-6 flex flex-col justify-between h-full">
           <h3 className="text-lg font-medium">Guest</h3>
           <p className="text-muted-foreground mt-2 text-sm">
             For users who want to try out the basics.
@@ -51,10 +51,14 @@ export function FeatureComparison() {
               <span>Access to free models</span>
             </li>
           </ul>
+          <div className="mt-8 flex-1" />
+          <div className="flex flex-wrap items-center justify-start gap-3 mt-auto pt-4">
+            <OpenAIIcon className="h-8 w-8" />
+          </div>
         </div>
 
         {/* Authenticated Plan */}
-        <div className="border-border/50 rounded-lg border p-6">
+        <div className="border-border/50 rounded-lg border p-6 flex flex-col justify-between h-full">
           <h3 className="text-lg font-medium">Authenticated</h3>
           <p className="text-muted-foreground mt-2 text-sm">
             For regular users who need more power.
@@ -73,6 +77,12 @@ export function FeatureComparison() {
               <span>Saved chat history</span>
             </li>
           </ul>
+          <div className="mt-8 flex-1" />
+          <div className="flex flex-wrap items-center justify-start gap-3 mt-auto pt-4">
+            <OpenAIIcon className="h-8 w-8" />
+            <DeepseekIcon className="h-8 w-8" />
+            <GeminiIcon className="h-8 w-8" />
+          </div>
         </div>
 
         {/* $MAVEX Holder Plan with animated border */}

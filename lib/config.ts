@@ -9,17 +9,15 @@ import {
 } from "@phosphor-icons/react/dist/ssr"
 
 export const NON_AUTH_DAILY_MESSAGE_LIMIT = 5
-export const AUTH_DAILY_MESSAGE_LIMIT = 9999
+export const AUTH_DAILY_MESSAGE_LIMIT = 200
 export const REMAINING_QUERY_ALERT_THRESHOLD = 2
 export const DAILY_FILE_UPLOAD_LIMIT = 5
 export const DAILY_LIMIT_PRO_MODELS = 500
 
 export const FREE_MODELS_IDS = [
   "openrouter:deepseek/deepseek-r1:free",
-  "openrouter:meta-llama/llama-3.3-8b-instruct:free",
-  "pixtral-large-latest",
-  "mistral-large-latest",
   "gpt-4.1-nano",
+  "openrouter:google/gemini-2.0-flash-001",
 ]
 
 export const MODEL_DEFAULT = "gpt-4.1-nano"
@@ -126,7 +124,7 @@ export const CURATED_AGENTS_SLUGS = [
 
 // MAVEX Token Configuration
 export const MAVEX_CONFIG = {
-  ADDRESS: "So11111111111111111111111111111111111111112",
+  ADDRESS: "EThXBRb4wbYDYpkWL7cdDWoyXmKWWkaL3k13AuSupump",
   TOKEN_SYMBOL: "$MAVEX",
   TOKEN_NAME: "Mavex Token",
   NETWORK: "mainnet-beta",

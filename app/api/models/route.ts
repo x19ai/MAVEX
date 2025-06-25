@@ -6,6 +6,15 @@ import {
 } from "@/lib/models"
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { MAVEX_CONFIG } from "@/lib/config"
+import { ModelConfig } from "@/lib/models/types"
+
+function sortModelsUnlockedFirstAlphabetical(models: ModelConfig[]): ModelConfig[] {
+  return models.slice().sort((a: ModelConfig, b: ModelConfig) => {
+    if (a.accessible !== b.accessible) return a.accessible ? -1 : 1
+    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  })
+}
 
 export async function GET() {
   try {
@@ -17,7 +26,7 @@ export async function GET() {
         ...model,
         accessible: true,
       }))
-      return new Response(JSON.stringify({ models }), {
+      return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
@@ -29,13 +38,20 @@ export async function GET() {
 
     if (!authData?.user?.id) {
       const models = await getModelsWithAccessFlags()
-      return new Response(JSON.stringify({ models }), {
+      return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
         },
       })
     }
+
+    // Fetch user profile to get wallet address and type
+    const { data: userProfileData } = await supabase
+      .from("users")
+      .select("wallet_address, wallet_type")
+      .eq("id", authData.user.id)
+      .single()
 
     const { data, error } = await supabase
       .from("user_keys")
@@ -45,7 +61,7 @@ export async function GET() {
     if (error) {
       console.error("Error fetching user keys:", error)
       const models = await getModelsWithAccessFlags()
-      return new Response(JSON.stringify({ models }), {
+      return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
@@ -56,9 +72,12 @@ export async function GET() {
     const userProviders = data?.map((k) => k.provider) || []
     console.log("User providers:", userProviders)
 
-    if (userProviders.length === 0) {
-      const models = await getModelsWithAccessFlags()
-      return new Response(JSON.stringify({ models }), {
+    // If user has imported their own API key, only show their models
+    if (userProviders.length > 0) {
+      const models = await getModelsForUserProviders(userProviders)
+      console.log("Models returned for user providers:", models.length)
+      console.log("Sample models:", models.slice(0, 3).map(m => ({ id: m.id, providerId: m.providerId, accessible: m.accessible })))
+      return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
@@ -66,11 +85,44 @@ export async function GET() {
       })
     }
 
-    const models = await getModelsForUserProviders(userProviders)
-    console.log("Models returned for user providers:", models.length)
-    console.log("Sample models:", models.slice(0, 3).map(m => ({ id: m.id, providerId: m.providerId, accessible: m.accessible })))
+    // If user does not have their own API key, check for MAVEX holder
+    let isMavexHolder = false
+    if (userProfileData?.wallet_address && userProfileData?.wallet_type === "phantom") {
+      // Call the token-balance API route
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/token-balance?wallet=${userProfileData.wallet_address}`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (data.balance && data.balance > 0) {
+            isMavexHolder = true
+          }
+        }
+      } catch (err) {
+        // Ignore error, fallback to normal access
+      }
+    }
 
-    return new Response(JSON.stringify({ models }), {
+    if (isMavexHolder) {
+      // Grant access to all models from openrouter, openai, google, and mistral
+      const allModels = await getAllModels(true)
+      const models = allModels.map((model) =>
+        ["openrouter", "openai", "google", "mistral"].includes(model.providerId)
+          ? { ...model, accessible: true, accessibleReason: "mavex" }
+          : model
+      )
+      return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+    }
+
+    // Default: show models with normal access flags
+    const models = await getModelsWithAccessFlags()
+    return new Response(JSON.stringify({ models: sortModelsUnlockedFirstAlphabetical(models) }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

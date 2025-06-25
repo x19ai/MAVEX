@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react"
+import { useUser } from "@/lib/user-store/provider"
 
 type UserKeyStatus = {
   openrouter: boolean
@@ -31,6 +32,7 @@ type ModelContextType = {
   refreshFavoriteModels: () => Promise<void>
   refreshFavoriteModelsSilent: () => Promise<void>
   refreshAll: () => Promise<void>
+  isMavexAccess: boolean
 }
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined)
@@ -48,6 +50,8 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
   })
   const [favoriteModels, setFavoriteModels] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isMavexAccess, setIsMavexAccess] = useState(false)
+  const { user } = useUser?.() || { user: null }
 
   const fetchModels = useCallback(async () => {
     try {
@@ -57,6 +61,13 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
         console.log("Models received from API:", data.models?.length || 0)
         console.log("Sample models:", data.models?.slice(0, 3).map((m: any) => ({ id: m.id, providerId: m.providerId, accessible: m.accessible })))
         setModels(data.models || [])
+        if (Array.isArray(data.models)) {
+          const hasMavexFree = data.models.some(
+            (model: any) =>
+              ["openrouter", "openai", "google", "mistral"].includes(model.providerId) && model.accessible && model.accessibleReason === "mavex"
+          )
+          setIsMavexAccess(hasMavexFree)
+        }
       }
     } catch (error) {
       console.error("Failed to fetch models:", error)
@@ -169,6 +180,7 @@ export function ModelProvider({ children }: { children: React.ReactNode }) {
         refreshFavoriteModels,
         refreshFavoriteModelsSilent,
         refreshAll,
+        isMavexAccess,
       }}
     >
       {children}

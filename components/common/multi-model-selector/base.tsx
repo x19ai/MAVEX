@@ -115,7 +115,8 @@ export function MultiModelSelector({
     const isSelected = selectedModelIds.includes(model.id)
     const isAtLimit = selectedModelIds.length >= maxModels
     const provider = PROVIDERS.find((provider) => provider.id === model.icon)
-
+    // Use accessibleReason for MAVEX
+    const isMavexFree = model.accessibleReason === "mavex"
     return (
       <div
         key={model.id}
@@ -123,14 +124,14 @@ export function MultiModelSelector({
           "hover:bg-accent/50 flex w-full cursor-pointer items-center justify-between px-3 py-2",
           isSelected && "bg-accent"
         )}
-        onClick={() => handleModelToggle(model.id, isLocked)}
+        onClick={() => handleModelToggle(model.id, isLocked && !isMavexFree)}
       >
         <div className="flex items-center gap-3">
           <Checkbox
             checked={isSelected}
-            disabled={isLocked || (!isSelected && isAtLimit)}
+            disabled={(isLocked && !isMavexFree) || (!isSelected && isAtLimit)}
             onClick={(e) => e.stopPropagation()}
-            onChange={() => handleModelToggle(model.id, isLocked)}
+            onChange={() => handleModelToggle(model.id, isLocked && !isMavexFree)}
           />
           {provider?.icon && <provider.icon className="size-5" />}
           <div className="flex flex-col gap-0">
@@ -138,7 +139,11 @@ export function MultiModelSelector({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isLocked && (
+          {isMavexFree ? (
+            <div className="border-input bg-accent text-green-600 flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
+              <span>FREE</span>
+            </div>
+          ) : isLocked && (
             <div className="border-input bg-accent text-muted-foreground flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium">
               <StarIcon className="size-2" />
               <span>Locked</span>
@@ -162,11 +167,6 @@ export function MultiModelSelector({
     .filter((model) =>
       model.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .sort((a, b) => {
-      const aIsFree = FREE_MODELS_IDS.includes(a.id)
-      const bIsFree = FREE_MODELS_IDS.includes(b.id)
-      return aIsFree === bIsFree ? 0 : aIsFree ? -1 : 1
-    })
 
   if (isLoadingModels) {
     return null

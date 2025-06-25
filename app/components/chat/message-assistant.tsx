@@ -13,6 +13,7 @@ import { Reasoning } from "./reasoning"
 import { SearchImages } from "./search-images"
 import { SourcesList } from "./sources-list"
 import { ToolInvocation } from "./tool-invocation"
+import { Loader } from "@/components/prompt-kit/loader"
 
 type MessageAssistantProps = {
   children: string
@@ -72,24 +73,25 @@ export function MessageAssistant({
       )}
     >
       <div className={cn("flex min-w-full flex-col gap-2", isLast && "pb-8")}>
+        {/* Show loader if assistant is typing and content is empty */}
+        {(contentNullOrEmpty && (status === "streaming" || status === "submitted")) ? (
+          <div className="flex items-start">
+            <div className="max-w-[70%] text-left">
+              <Loader />
+            </div>
+          </div>
+        ) : null}
+
+        {/* Show reasoning below loader if present */}
         {reasoningParts && reasoningParts.reasoning && (
           <Reasoning
             reasoning={reasoningParts.reasoning}
-            isStreaming={status === "streaming"}
+            isStreaming={status === "streaming" && contentNullOrEmpty}
           />
         )}
 
-        {toolInvocationParts &&
-          toolInvocationParts.length > 0 &&
-          preferences.showToolInvocations && (
-            <ToolInvocation toolInvocations={toolInvocationParts} />
-          )}
-
-        {searchImageResults.length > 0 && (
-          <SearchImages results={searchImageResults} />
-        )}
-
-        {contentNullOrEmpty ? null : (
+        {/* Show message content only when not empty */}
+        {!contentNullOrEmpty && (
           <MessageContent
             className={cn(
               "prose dark:prose-invert relative min-w-full bg-transparent p-0",
