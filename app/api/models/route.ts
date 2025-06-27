@@ -8,12 +8,45 @@ import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { MAVEX_CONFIG } from "@/lib/config"
 import { ModelConfig } from "@/lib/models/types"
+import { Connection, PublicKey } from '@solana/web3.js'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
 function sortModelsUnlockedFirstAlphabetical(models: ModelConfig[]): ModelConfig[] {
   return models.slice().sort((a: ModelConfig, b: ModelConfig) => {
     if (a.accessible !== b.accessible) return a.accessible ? -1 : 1
     return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
   })
+}
+
+// Helper function to check MAVEX token balance directly
+async function checkMavexTokenBalance(walletAddress: string): Promise<number> {
+  try {
+    // Initialize Solana connection
+    const connection = new Connection(MAVEX_CONFIG.API.RPC, {
+      commitment: 'confirmed',
+      confirmTransactionInitialTimeout: 30000
+    })
+
+    // Get token accounts for the wallet
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      new PublicKey(walletAddress),
+      { programId: TOKEN_PROGRAM_ID }
+    )
+
+    // Find MAVEX token account
+    const mavexAccount = tokenAccounts.value.find(
+      account => account.account.data.parsed.info.mint === MAVEX_CONFIG.ADDRESS
+    )
+
+    if (mavexAccount) {
+      return mavexAccount.account.data.parsed.info.tokenAmount.uiAmount
+    } else {
+      return 0
+    }
+  } catch (error) {
+    console.error('Error checking MAVEX token balance:', error)
+    return 0
+  }
 }
 
 export async function GET() {
@@ -88,19 +121,11 @@ export async function GET() {
     // If user does not have their own API key, check for MAVEX holder
     let isMavexHolder = false
     if (userProfileData?.wallet_address && userProfileData?.wallet_type === "phantom") {
-      // Call the token-balance API route
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/token-balance?wallet=${userProfileData.wallet_address}`
-        )
-        if (res.ok) {
-          const data = await res.json()
-          if (data.balance && data.balance > 0) {
-            isMavexHolder = true
-          }
-        }
-      } catch (err) {
-        // Ignore error, fallback to normal access
+      // Check token balance directly instead of making HTTP request
+      const balance = await checkMavexTokenBalance(userProfileData.wallet_address)
+      console.log(`MAVEX token balance for ${userProfileData.wallet_address}:`, balance)
+      if (balance > 0) {
+        isMavexHolder = true
       }
     }
 

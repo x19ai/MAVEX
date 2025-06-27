@@ -124,7 +124,7 @@ export const CURATED_AGENTS_SLUGS = [
 
 // MAVEX Token Configuration
 export const MAVEX_CONFIG = {
-  ADDRESS: "AT7UFqm2k4PnixoJrKbSFbZgutedL53tmmHvwcHX7h4i",
+  ADDRESS: "5a4uB53aorSKYnpCUA4eKxm1Kk4op3rwbhGC1HQJXqN2",
   TOKEN_SYMBOL: "$MAVEX",
   TOKEN_NAME: "Mavex Token",
   NETWORK: "mainnet-beta",
