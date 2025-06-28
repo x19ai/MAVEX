@@ -118,7 +118,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="mb-2 p-3">
         <a
-          href="https://pump.fun/coin/"
+          href="https://pump.fun/coin/1vMpFFTRfVdzRAy6344g2DBhJJLjx6dw4S9zbzfpump"
           className="hover:bg-muted flex items-center gap-2 rounded-md p-2"
           target="_blank"
           aria-label="Star the repo on GitHub"
