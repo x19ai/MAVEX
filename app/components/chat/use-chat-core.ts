@@ -157,7 +157,7 @@ export function useChatCore({
           optimisticAttachments.length > 0 ? optimisticAttachments : undefined,
       }
 
-      setMessages(prev => [...prev, optimisticUserMessage])
+      setMessages(prev => [...prev, optimisticUserMessage!])
       setInput("")
 
       const submittedFiles = [...files]
