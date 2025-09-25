@@ -126,6 +126,13 @@ export function useChatCore({
     prevChatIdRef.current = chatId
   }, [chatId, messages.length, setMessages])
 
+  // Reset isSubmitting when streaming completes
+  useEffect(() => {
+    if (status === "ready" && isSubmitting) {
+      setIsSubmitting(false)
+    }
+  }, [status, isSubmitting])
+
   // Submit action
   const submit = useCallback(async () => {
     setIsSubmitting(true)
