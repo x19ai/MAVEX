@@ -130,6 +130,10 @@ export function useChatCore({
   const submit = useCallback(async () => {
     setIsSubmitting(true)
 
+    const optimisticUserId = `optimistic-user-${uuidv4()}`
+    const optimisticAssistantId = `optimistic-assistant-${uuidv4()}`
+    let optimisticUserMessage: Message | null = null
+
     try {
       const messageContent = input
       if (!messageContent.trim()) {
@@ -141,11 +145,10 @@ export function useChatCore({
         return
       }
 
-      const optimisticUserId = `optimistic-user-${uuidv4()}`
       const optimisticAttachments =
         files.length > 0 ? await createOptimisticAttachments(files) : []
 
-      const optimisticUserMessage: Message = {
+      optimisticUserMessage = {
         id: optimisticUserId,
         content: messageContent,
         role: "user" as const,
@@ -162,14 +165,14 @@ export function useChatCore({
 
       const allowed = await checkLimitsAndNotify(uid)
       if (!allowed) {
-        setMessages(prev => prev.filter(m => m.id !== optimisticUserId))
+        setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
 
       const currentChatId = await ensureChatExists(uid, messages, messageContent)
       if (!currentChatId) {
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
@@ -179,7 +182,7 @@ export function useChatCore({
           title: `The message you submitted was too long, please submit something shorter. (Max ${MESSAGE_MAX_LENGTH} characters)`,
           status: "error",
         })
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId))
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticUserId && msg.id !== optimisticAssistantId))
         cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
         return
       }
@@ -188,7 +191,7 @@ export function useChatCore({
       if (submittedFiles.length > 0) {
         attachments = await handleFileUploads(uid, currentChatId)
         if (attachments === null) {
-          setMessages(prev => prev.filter(m => m.id !== optimisticUserId))
+          setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
           cleanupOptimisticAttachments(
             optimisticUserMessage.experimental_attachments
           )
@@ -216,6 +219,16 @@ export function useChatCore({
         experimental_attachments: optimisticUserMessage.experimental_attachments
       }
       
+      // Add optimistic assistant message to show loading animation
+      const optimisticAssistantMessage: Message = {
+        id: optimisticAssistantId,
+        role: 'assistant',
+        content: '',
+        createdAt: new Date(),
+      }
+      
+      setMessages(prev => [...prev, optimisticAssistantMessage])
+      
       append(messageToSend, options)
       
       // Optimistic messages will be replaced by real messages when they come in
@@ -232,8 +245,11 @@ export function useChatCore({
         title: "An error occurred while sending the message.",
         status: "error",
       })
-      // Note: optimistic message cleanup on general error is complex and will be handled if it becomes an issue.
-    } finally {
+      // Clean up optimistic messages on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticUserId && m.id !== optimisticAssistantId))
+      if (optimisticUserMessage?.experimental_attachments) {
+        cleanupOptimisticAttachments(optimisticUserMessage.experimental_attachments)
+      }
       setIsSubmitting(false)
     }
   }, [
@@ -318,7 +334,6 @@ export function useChatCore({
       } catch (suggestionError) {
         setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
         toast({ title: "Failed to send suggestion", status: "error" })
-      } finally {
         setIsSubmitting(false)
       }
     },
